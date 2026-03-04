@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Spatial · Vancouver Prototype v24</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f0f4f8}
+#map{height:100vh;width:100%}
+.sidebar{position:absolute;top:10px;left:10px;width:375px;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.13);z-index:1000;display:flex;flex-direction:column;max-height:96vh;overflow:hidden}
+.hdr{background:#1a73e8;color:#fff;padding:13px 16px;font-size:17px;font-weight:700;flex-shrink:0}
+.hdr span{font-size:12px;font-weight:400;opacity:.8;margin-left:8px}
+.pills{display:flex;gap:5px;flex-wrap:wrap;padding:7px 14px;background:#f1f5ff;border-bottom:1px solid #e4eaff;flex-shrink:0}
+.pill{padding:3px 8px;border-radius:999px;font-size:11px;border:1px solid #d8e2ff;color:#1a73e8;background:#fff;white-space:nowrap}
+.pill.ok{border-color:#b7efc5;color:#0a6b2f;background:#edfff3}
+.pill.warn{border-color:#ffd6a5;color:#7a4000;background:#fff8ee}
+.pill.gray{border-color:#e2e8f0;color:#64748b;background:#f8fafc}
+.ctrl{padding:11px 14px;border-bottom:1px solid #eee;flex-shrink:0}
+.row{display:flex;gap:7px;margin-bottom:7px}
+.row:last-child{margin-bottom:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border-radius:9px;font-size:14px;padding:9px 12px;border:none;background:#fff;color:#333;transition:background .15s,color .15s;-webkit-user-select:none;user-select:none;font-family:inherit}
+.btn-loc,.btn-demo{flex:1;border:1px solid #c5d5ff;color:#1a73e8}
+.btn-loc:hover,.btn-demo:hover{background:#eef2ff}
+.btn-walk,.btn-bike{flex:1;border:1px solid #e2e8f0;color:#64748b;font-size:13px}
+.btn-walk.on,.btn-bike.on{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.btn-walk:hover:not(.on),.btn-bike:hover:not(.on){background:#f1f5f9}
+.btn-far{width:100%;border:1px solid #c5d5ff;color:#1a73e8;font-size:13px}
+.btn-places{width:100%;border:1px solid #d8e2ff;background:#ffffff;color:#1a73e8;font-size:13px}
+.btn-places.on{background:#e8f0fe;border-color:#c5d5ff}
+.btn-more{width:100%;border:1px solid #e2e8f0;background:#f8fafc;color:#334155;font-size:13px}
+.btn-more:hover{background:#f1f5f9}
+
+.btn-far:hover{background:#eef2ff}
+.lbl{display:block;font-size:12px;font-weight:600;color:#444;margin:6px 0 3px}
+input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
+.rlbl{text-align:center;font-size:12px;color:#555;margin-top:2px}
+.note{font-size:11px;color:#94a3b8;margin-top:3px;line-height:1.4;min-height:14px}
+.fgroups{display:flex;flex-direction:column;gap:5px;margin-top:9px}
+.fgroup{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.fglbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;width:64px;flex-shrink:0}
+.ftag{display:inline-flex;align-items:center;cursor:pointer;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;transition:all .15s;-webkit-user-select:none;user-select:none;white-space:nowrap}
+.ftag:hover{background:#f1f5f9;border-color:#c5d5ff}
+.ftag.on{color:#fff}
+.ftag[data-f="event"].on{background:#1a73e8;border-color:#1a73e8}
+.ftag[data-f="ubc"].on{background:#002145;border-color:#002145}
+.ftag[data-f="park"].on{background:#166534;border-color:#166534}
+.ftag[data-f="cc"].on{background:#0369a1;border-color:#0369a1}
+.ftag[data-f="art"].on{background:#7e22ce;border-color:#7e22ce}
+.ftag[data-f="permit"].on{background:#c2410c;border-color:#c2410c}
+.list{overflow-y:auto;padding:8px 10px;flex:1;min-height:0}
+.shdr{font-size:11px;font-weight:700;color:#475569;display:flex;justify-content:space-between;align-items:center;margin:10px 4px 5px;text-transform:uppercase;letter-spacing:.4px}
+.shdr .h{font-weight:400;color:#94a3b8;text-transform:none;letter-spacing:0}
+.card{padding:0;margin:5px 0;border-radius:10px;background:#f8fafc;cursor:pointer;border:1px solid transparent;transition:background .15s,transform .15s;overflow:hidden}
+.card:hover{background:#eef2ff;transform:translateX(2px)}
+.card.sel{border-color:#1a73e8;background:#eef2ff}
+.card-img{width:100%;height:90px;object-fit:cover;display:block;background:#e2e8f0}
+.card-img.placeholder{height:0}
+.card-body{padding:10px 12px}
+.ct{font-weight:600;font-size:13px;color:#1e293b;line-height:1.3}
+.cm{font-size:12px;color:#64748b;margin-top:2px}
+.cf{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;align-items:center}
+.tg{font-size:10px;padding:2px 6px;border-radius:999px;white-space:nowrap}
+.te{background:#e8f0fe;color:#1a73e8}
+.tp{background:#dcfce7;color:#166534}
+.ta{background:#fae8ff;color:#7e22ce}
+.tx{background:#fff7ed;color:#c2410c}
+.tc{background:#e0f2fe;color:#0369a1}
+.tu{background:#ecfeff;color:#0f766e}
+.tg_{background:#f1f5f9;color:#475569}
+.tw{background:#dcfce7;color:#166534}
+.tf{background:#fef9c3;color:#854d0e}
+/* Time filter */
+.tfilter-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.tflbl{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;width:64px;flex-shrink:0}
+.ttag{display:inline-flex;align-items:center;cursor:pointer;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;transition:all .15s;-webkit-user-select:none;user-select:none;white-space:nowrap}
+.ttag:hover{background:#f1f5f9;border-color:#c5d5ff}
+.ttag.on{background:#0f766e;border-color:#0f766e;color:#fff}
+.empty{padding:13px;border-radius:10px;background:#fff8ee;border:1px solid #ffd6a5;color:#7a4000;font-size:13px;line-height:1.5;margin:6px 4px}
+.ibox{padding:9px 11px;border-radius:10px;background:#f0f4ff;border:1px solid #c5d5ff;color:#1a73e8;font-size:12px;line-height:1.4;margin:5px 4px}
+
+/* Detail panel */
+.det{border-top:1px solid #eee;background:#fafbff;display:none;flex-shrink:0;overflow:hidden}
+.det.on{display:block}
+.det-img{width:100%;max-height:140px;object-fit:cover;display:block}
+.det-body{padding:12px 14px}
+.det-body h3{font-size:14px;font-weight:700;margin-bottom:6px;color:#1e293b}
+.det-body p{font-size:12px;color:#475569;margin:3px 0;line-height:1.5}
+.det-meta{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
+.dact{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.dact a{flex:1;min-width:100px;text-decoration:none}
+.dact a .btn,.dact .btn{width:100%;border:1px solid #c5d5ff;color:#1a73e8;font-size:13px}
+.dact a .btn:hover,.dact .btn:hover{background:#eef2ff}
+.dact a .btn.primary,.dact .btn.primary{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.dact a .btn.primary:hover{background:#155cc0}
+.dact a .btn.tm-btn{background:#e8472a;color:#fff;border-color:#e8472a}
+.dact a .btn.tm-btn:hover{background:#c73820}
+.foot{padding:7px 14px;font-size:11px;color:#94a3b8;border-top:1px solid #eee;background:#fafbff;flex-shrink:0}
+
+.leaflet-popup-content{margin:0!important;}
+.leaflet-popup-content-wrapper{padding:0!important;border-radius:12px;overflow:hidden;}
+.leaflet-popup-close-button{padding:6px 8px!important;}
+
+
+.pin-icon{will-change:transform}
+.leaflet-marker-icon,.leaflet-marker-shadow{position:absolute !important}
+
+.search{
+  flex:1;
+  padding:10px 12px;
+  border:1px solid #dde5ee;
+  border-radius:12px;
+  font-size:14px;
+  outline:none;
+}
+.search:focus{border-color:#9bb7d6; box-shadow:0 0 0 3px rgba(60,130,220,0.12);}
+.btn-clear{width:42px; padding:10px 0; text-align:center;}
+
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="sidebar">
+  <div class="hdr">Spatial · Vancouver <span>v23</span></div>
+  <div class="pills">
+    <span class="pill gray" id="pDisc">Time to first click: —</span>
+    <span class="pill gray" id="pMode">Walk · 10 min</span>
+    <span class="pill gray" id="pIso">Isochrone: —</span>
+    <span class="pill gray" id="pData">Loading…</span>
+    <span class="pill gray" id="pCount">0 in range</span>
+  </div>
+  <div class="ctrl">
+    <div class="row">
+      <button class="btn btn-loc" id="btnLoc">📍 My location</button>
+      <button class="btn btn-demo" id="btnDemo">🏙️ Downtown</button>
+    </div>
+    <div class="lbl">Travel mode</div>
+    <div class="row">
+      <button class="btn btn-walk on" id="btnWalk">🚶 Walk</button>
+      <button class="btn btn-bike"    id="btnBike">🚲 Bike</button>
+    </div>
+    <div class="lbl">Time budget</div>
+    <input type="range" id="sMin" min="5" max="30" value="10" step="5">
+    <div class="rlbl" id="rLbl">Walk · 10 min</div>
+    <div class="note" id="iNote">Set a location to generate isochrone</div>
+
+    <div class="lbl">Search building</div>
+    <div class="row">
+      <input id="bldgSearch" class="search" type="text" list="bldgList" placeholder="e.g., Irving K. Barber Library">
+      <button class="btn btn-clear" id="btnClearSearch" title="Clear">✕</button>
+    </div>
+    <datalist id="bldgList"></datalist>
+
+    <div class="fgroups">
+      <div class="fgroup">
+        <span class="fglbl">Events</span>
+        <span class="ftag" data-f="ubc">🎓 UBC Workshops</span>
+                <span class="ftag" data-f="event">📅 Local</span>
+      </div>
+      <div class="fgroup">
+        <span class="fglbl">When</span>
+        <span class="ttag" data-t="future">🗓 Upcoming</span>
+        <span class="ttag" data-t="24h">⚡ 24 hrs</span>
+        <span class="ttag" data-t="3d">📆 3 days</span>
+        <span class="ttag" data-t="7d">🗓 This week</span>
+              <span class="ttag" data-t="month">📅 This month</span>
+        <span class="ttag" data-t="past30">⏪ Past 30 days</span>
+</div>
+      <div class="fgroup">
+        <span class="fglbl">Amenities</span>
+        <span class="ftag" data-f="park">🌳 Parks</span>
+        <span class="ftag" data-f="cc">🏢 Centres</span>
+        <span class="ftag" data-f="art">🎨 Art</span>
+        <span class="ftag" data-f="permit">🏗 Permits</span>
+      </div>
+    </div>
+    
+    <div class="row" style="margin-top:9px">
+      <button class="btn btn-places" id="btnPlaces">🗺 Places layer: Off</button>
+    </div>
+<div class="row" style="margin-top:9px">
+      <button class="btn btn-far" id="btnFar">➕ Show farther events</button>
+    </div>
+  </div>
+  <div class="list" id="list">
+    <div class="ibox">Set a location to discover what's happening around you.</div>
+  </div>
+  <div class="det" id="det"></div>
+  <div class="foot">Events: <b>Local</b> + <b>UBC</b> · Data: <b>Vancouver Open Data</b> · Isochrone: <b>OpenRouteService</b></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+window.addEventListener('load', function() {
+
+var ORS_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM4ZTUxNDliYzMxYTRjY2Y4NjczMjZlNzAwMTkxNjVkIiwiaCI6Im11cm11cjY0In0=';
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+var map = L.map('map').setView([49.2827,-123.1207],13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+var mkLayer = L.layerGroup().addTo(map);
+
+
+// ── Building search (UBC building dataset → pan + footprint polygon) ───────────
+var bldgSearchMk=null;
+var bldgPolyLayer=null;
+var bldgPolyCache = new Map(); // nameLower -> {geojson,bbox}
+
+function clearBuildingPolygon(){
+  if (bldgPolyLayer){ try{ map.removeLayer(bldgPolyLayer);}catch(_e){} bldgPolyLayer=null; }
+}
+function clearBuildingSearch(){
+  var inp = document.getElementById('bldgSearch');
+  if (inp) inp.value = '';
+  var dl = document.getElementById('bldgList');
+  if (dl) dl.innerHTML = '';
+  if (bldgSearchMk){ try{ map.removeLayer(bldgSearchMk);}catch(_e){} bldgSearchMk=null; }
+  clearBuildingPolygon();
+}
+
+function populateBldgDatalist(prefix){
+  // Show suggestions only after user types at least 1 character.
+  var dl = document.getElementById('bldgList');
+  if (!dl) return;
+  prefix = (prefix==null?'':String(prefix)).trim();
+  if (prefix.length < 1){ dl.innerHTML=''; return; }
+
+  var q = prefix.toLowerCase();
+  var names = [];
+  var seen = new Set();
+  if (typeof ubcBldgIndex !== 'undefined' && ubcBldgIndex && ubcBldgIndex.size) {
+    ubcBldgIndex.forEach(function(rec, key){
+      if (!rec || !rec.name) return;
+      var name = rec.name;
+      var nl = name.toLowerCase();
+      if (nl.indexOf(q) < 0) return;
+      if (seen.has(name)) return;
+      seen.add(name);
+      names.push(name);
+    });
+  }
+  names.sort();
+  names = names.slice(0, 25);
+
+  dl.innerHTML = names.map(function(n){
+    return '<option value="'+esc(n)+'"></option>';
+  }).join('');
+}
+function panToBuildingIfKnown(name){
+  try {
+    var hit = lookupUBCBuilding(name);
+    if (hit && isFinite(hit.lat) && isFinite(hit.lng)) {
+      map.setView([hit.lat, hit.lng], Math.max(map.getZoom(), 16));
+
+      // Prefer polygon footprint (more accurate than a point)
+      showBuildingPolygon(hit.name||name, hit.lat, hit.lng).then(function(shown){
+        if (!shown){
+          // Fallback marker
+          if (bldgSearchMk) { try { map.removeLayer(bldgSearchMk); } catch(_e){} }
+          bldgSearchMk = L.marker([hit.lat, hit.lng], { icon: makePinIcon('#111', 0.9) }).addTo(map);
+          bldgSearchMk.bindPopup('<b>'+esc(hit.name||name)+'</b><br>'+esc(hit.address||'')).openPopup();
+        } else {
+          // Put a subtle marker at the known point too (optional)
+          if (bldgSearchMk) { try { map.removeLayer(bldgSearchMk); } catch(_e){} }
+          bldgSearchMk = L.marker([hit.lat, hit.lng], { icon: makePinIcon('#111', 0.75) }).addTo(map);
+          bldgSearchMk.bindPopup('<b>'+esc(hit.name||name)+'</b><br>'+esc(hit.address||'')).openPopup();
+        }
+      });
+
+      return true;
+    }
+  } catch(_e){}
+  return false;
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var userMk=null, isoLayer=null, isoPoly=null;
+var tMode='foot-walking', mins=10, showFar=false;
+var eventFilters = new Set(['ubc']);
+var amenityFilters = new Set();
+var showAmenities = false;
+var timeWindow = null; // null=any, 'future', '24h', '3d', '7d', 'month', 'past30'
+var selId=null, items=[], mkMap=new Map();
+var evListLimit=10; // list view pagination: show N events, load 5 more
+var bldgSearchMk=null;
+var bldgPolyLayer=null;
+var bldgPolyCache = new Map(); // nameLower -> {latlngs:[[lat,lng],...], bbox:LatLngBounds}
+
+function clearBuildingPolygon(){
+  if (bldgPolyLayer){ try{ map.removeLayer(bldgPolyLayer);}catch(_e){} bldgPolyLayer=null; }
+}
+
+function overpassFetchBuildingPolygon(name, nearLat, nearLng){
+  // Fetch a building footprint from OpenStreetMap via Overpass, close to the known point.
+  // We use a tight radius and name match to reduce false positives.
+  var nm = String(name||'').trim();
+  if(!nm) return Promise.resolve(null);
+  var key = nm.toLowerCase();
+  if (bldgPolyCache.has(key)) return Promise.resolve(bldgPolyCache.get(key));
+  // Escape quotes for Overpass
+  var reName = nm.replace(/["\\]/g, '\\$&');
+  var q =
+    '[out:json][timeout:25];('+
+      'way["building"]["name"~"^'+reName+'$",i](around:700,'+nearLat+','+nearLng+');' +
+      'way["building:part"]["name"~"^'+reName+'$",i](around:700,'+nearLat+','+nearLng+');' +
+    ');out geom;';
+  var url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q);
+  return fetch(url).then(function(r){ if(!r.ok) throw new Error('Overpass HTTP '+r.status); return r.json(); })
+    .then(function(js){
+      if(!js || !js.elements || !js.elements.length) return null;
+      // pick the closest way with geometry
+      var best=null, bestD=1e18;
+      js.elements.forEach(function(el){
+        if(!el || el.type!=='way' || !el.geometry || el.geometry.length<4) return;
+        // compute rough centroid distance
+        var sumLat=0,sumLng=0;
+        el.geometry.forEach(function(p){ sumLat+=p.lat; sumLng+=p.lon; });
+        var cLat=sumLat/el.geometry.length, cLng=sumLng/el.geometry.length;
+        var d = (cLat-nearLat)*(cLat-nearLat) + (cLng-nearLng)*(cLng-nearLng);
+        if(d<bestD){ bestD=d; best=el; }
+      });
+      if(!best) return null;
+      var latlngs = best.geometry.map(function(p){ return [p.lat, p.lon]; });
+      // ensure closed ring for Leaflet polygon
+      if(latlngs.length && (latlngs[0][0]!==latlngs[latlngs.length-1][0] || latlngs[0][1]!==latlngs[latlngs.length-1][1])) {
+        latlngs.push(latlngs[0]);
+      }
+      var res = { latlngs: latlngs };
+      bldgPolyCache.set(key, res);
+      return res;
+    }).catch(function(_e){ return null; });
+}
+
+function showBuildingPolygon(name, nearLat, nearLng){
+  clearBuildingPolygon();
+  return overpassFetchBuildingPolygon(name, nearLat, nearLng).then(function(res){
+    if(!res || !res.latlngs) return false;
+    bldgPolyLayer = L.polygon(res.latlngs, { weight:2, fillOpacity:0.12 }).addTo(map);
+    try{ map.fitBounds(bldgPolyLayer.getBounds(), { padding:[30,30] }); }catch(_e){}
+    return true;
+  });
+}
+
+// Compute a better routing destination: nearest point on polygon boundary (reduces detours vs. centroid)
+function nearestPointOnRing(fromLat, fromLng, ring){
+  if(!ring || ring.length<2) return null;
+  // Equirectangular projection near Vancouver for speed; ok at building scale.
+  var lat0 = fromLat * Math.PI/180;
+  function proj(lat,lng){
+    var x = (lng-fromLng) * Math.cos(lat0);
+    var y = (lat-fromLat);
+    return [x,y];
+  }
+  var best=null, bestD=1e18;
+  for(var i=0;i<ring.length-1;i++){
+    var a=ring[i], b=ring[i+1];
+    var ap=proj(a[0],a[1]), bp=proj(b[0],b[1]);
+    var vx=bp[0]-ap[0], vy=bp[1]-ap[1];
+    var wx=0-ap[0], wy=0-ap[1];
+    var c1 = vx*wx + vy*wy;
+    var c2 = vx*vx + vy*vy;
+    var t = (c2>0)? (c1/c2) : 0;
+    if(t<0) t=0; else if(t>1) t=1;
+    var px = ap[0] + t*vx;
+    var py = ap[1] + t*vy;
+    var d = px*px + py*py;
+    if(d<bestD){
+      bestD=d;
+      // back to lat/lng
+      var lat = a[0] + t*(b[0]-a[0]);
+      var lng = a[1] + t*(b[1]-a[1]);
+      best=[lat,lng];
+    }
+  }
+  return best;
+}
+var isoBusy=false, firstListAt=null, firstDiscDone=false;
+var SPD = {'foot-walking':80,'cycling-regular':250};
+
+// ── Wire buttons ──────────────────────────────────────────────────────────────
+document.getElementById('btnLoc').addEventListener('click', getUserLocation);
+document.getElementById('btnDemo').addEventListener('click', setDemo);
+document.getElementById('btnWalk').addEventListener('click', function(){ setMode('foot-walking'); });
+document.getElementById('btnBike').addEventListener('click', function(){ setMode('cycling-regular'); });
+document.getElementById('sMin').addEventListener('input', onSlider);
+document.getElementById('btnFar').addEventListener('click', toggleFar);
+document.getElementById('btnPlaces').addEventListener('click', function(){ togglePlaces(!showAmenities); });
+
+
+// Building search listeners
+(function(){
+  var inp = document.getElementById('bldgSearch');
+  var clr = document.getElementById('btnClearSearch');
+  var dl  = document.getElementById('bldgList');
+
+  function refresh(){
+    if(!inp) return;
+    var v = inp.value || '';
+    populateBldgDatalist(v); // only shows after 1+ chars
+  }
+
+  if (inp) {
+    // Start with empty suggestions so nothing shows on focus
+    if (dl) dl.innerHTML = '';
+
+    inp.addEventListener('focus', function(){
+      if (dl && String(inp.value||'').trim().length < 1) dl.innerHTML = '';
+    });
+    inp.addEventListener('input', refresh);
+    inp.addEventListener('change', function(){
+      // On selection / enter: pan to known building and fetch footprint
+      panToBuildingIfKnown(inp.value);
+    });
+    inp.addEventListener('keydown', function(e){ if (e.key === 'Escape') clearBuildingSearch(); });
+  }
+  if (clr) clr.addEventListener('click', clearBuildingSearch);
+})();
+
+function syncFilterUI(){
+  // ensure event tags reflect eventFilters
+  document.querySelectorAll('.ftag').forEach(function(el){
+    var f = el.getAttribute('data-f');
+    var isEvent = (f === 'tm' || f === 'event' || f === 'ubc');
+    if (isEvent) {
+      if (eventFilters.has(f)) el.classList.add('on'); else el.classList.remove('on');
+    } else {
+      if (amenityFilters.has(f) && showAmenities) el.classList.add('on'); else el.classList.remove('on');
+    }
+  });
+}
+
+function togglePlaces(on){
+  showAmenities = !!on;
+  var b = document.getElementById('btnPlaces');
+  if (showAmenities) { b.classList.add('on'); b.textContent = '🗺 Places layer: On'; }
+  else { b.classList.remove('on'); b.textContent = '🗺 Places layer: Off'; }
+  // When turning on with no amenity filters, default to parks + centres (nice demo baseline)
+  if (showAmenities && amenityFilters.size === 0) { amenityFilters.add('park'); amenityFilters.add('cc'); }
+  // When turning off, hide selection if it was a place
+  if (!showAmenities && selId) {
+    var it = items.find(function(x){return x.id===selId;});
+    if (it && it.filt !== 'tm' && it.filt !== 'event') selId = null;
+  }
+  syncFilterUI();
+  render();
+}
+document.querySelectorAll('.ftag').forEach(function(el){
+  el.addEventListener('click', function(){
+    var f = el.getAttribute('data-f');
+    var isEvent = (f === 'tm' || f === 'event' || f === 'ubc');
+    if (isEvent) {
+      // Toggle event source filters
+      if (eventFilters.has(f)) { eventFilters.delete(f); el.classList.remove('on'); }
+      else { eventFilters.add(f); el.classList.add('on'); }
+      // If all off, treat as "show all events"
+      if (eventFilters.size === 0) { eventFilters.add('tm'); eventFilters.add('event'); eventFilters.add('ubc'); syncFilterUI(); }
+    } else {
+      // Amenity filters imply enabling the places layer
+      if (!showAmenities) togglePlaces(true);
+      if (amenityFilters.has(f)) { amenityFilters.delete(f); el.classList.remove('on'); }
+      else { amenityFilters.add(f); el.classList.add('on'); }
+    }
+    evListLimit = 10;
+    render();
+  });
+});
+
+// Time filter — single select, click again to deselect
+document.querySelectorAll('.ttag').forEach(function(el){
+  el.addEventListener('click', function(){
+    var t = el.getAttribute('data-t');
+    if (timeWindow === t) {
+      timeWindow = null;
+      el.classList.remove('on');
+    } else {
+      timeWindow = t;
+      document.querySelectorAll('.ttag').forEach(function(x){ x.classList.remove('on'); });
+      el.classList.add('on');
+    }
+    render();
+  });
+});
+
+// ── Eventbrite seed (local events) ───────────────────────────────────────────
+var ebSeed = [
+  {title:"Improv Comedy at the Roundhouse", addr:"Roundhouse Community Arts & Recreation Centre, Vancouver, BC", when:"Thu Mar 19 · 6:30 PM", url:"https://www.eventbrite.ca/e/improv-comedy-at-the-roundhouse-tickets-1984339216012"},
+  {title:"Squamish Nation Training & Trades Open House", addr:"1500 Railway St, North Vancouver, BC", when:"Wed Mar 25 · 2 PM", url:"https://www.eventbrite.ca/e/squamish-nation-training-trades-centre-open-house-tickets-1982397160271"},
+  {title:"Vancouver Police Monthly Info Session", addr:"Vancouver Police Headquarters, Vancouver, BC", when:"Wed Mar 18 · 6 PM", url:"https://www.eventbrite.ca/e/vancouver-police-monthly-information-session-march-18-2026-tickets-1983124313205"}
+];
+var geoCache = {};
+function geocode(addr, cb) {
+  if (geoCache.hasOwnProperty(addr)){ cb(geoCache[addr]); return; }
+  fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(addr),{headers:{Accept:'application/json'}})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var pt = d&&d[0]?{lat:+d[0].lat,lng:+d[0].lon}:null;
+      geoCache[addr]=pt; cb(pt);
+    }).catch(function(){ geoCache[addr]=null; cb(null); });
+}
+// Parse a loose date string like "Thu Mar 19 · 6:30 PM" into ms timestamp
+function parseEventDate(str) {
+  if (!str) return null;
+  try {
+    // strip the · time part and try native parse with current year
+    var clean = str.replace(/·.*$/, '').trim();
+    // append current year so Date can parse "Thu Mar 19"
+    var d = new Date(clean + ' 2026');
+    return isNaN(d.getTime()) ? null : d.getTime();
+  } catch(e){ return null; }
+}
+
+function loadEB(done){
+  var pending=ebSeed.length, n=0;
+  if (!pending){ done(); return; }
+  ebSeed.forEach(function(e){
+    geocode(e.addr, function(pt){
+      if (pt) items.push({id:'eb'+(n++),title:e.title,desc:e.addr,timeText:e.when,lat:pt.lat,lng:pt.lng,interest:'high',filt:'event',img:null,eventDateMs:parseEventDate(e.when),detail:{venue:e.addr,address:e.addr,date:e.when,genre:'',price:'',url:e.url}});
+      if (--pending===0) done();
+    });
+  });
+}
+
+
+// ── UBC Workshops (UBCevents + LibCal) ───────────────────────────────────────
+
+function fetchText(url){
+
+  // Use a lightweight public CORS proxy so this demo can run as a static file.
+  // If the proxy is down, the demo still works with other sources.
+  var p = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+  return fetch(p).then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); });
+}
+var UBC_POINT = {lat:49.2606, lng:-123.2460}; // UBC Vancouver (approx campus centre)
+
+function parseUBCEvents(html){
+  var doc = new DOMParser().parseFromString(html, 'text/html');
+  var blocks = doc.querySelectorAll('.tribe-events-calendar-list__event');
+  if (!blocks || !blocks.length) blocks = doc.querySelectorAll('article, .tribe-events-loop .type-tribe_events');
+
+  var out = [];
+  blocks.forEach(function(b){
+    var a = b.querySelector('.tribe-events-calendar-list__event-title a') || b.querySelector('a[href*="/event/"]');
+    if (!a) return;
+    var title = (a.textContent||'').trim();
+    var url = a.getAttribute('href') || '';
+    if (!title || !url) return;
+
+    var timeEl = b.querySelector('time[datetime]') || b.querySelector('time');
+    var dt = timeEl && timeEl.getAttribute('datetime');
+    var eventDateMs = dt ? Date.parse(dt) : null;
+
+    var dtText = '';
+    var dtWrap = b.querySelector('.tribe-events-calendar-list__event-datetime') || b.querySelector('.tribe-event-date-start');
+    if (dtWrap) dtText = (dtWrap.textContent||'').replace(/\s+/g,' ').trim();
+
+    var venue = '';
+    var vEl = b.querySelector('.tribe-events-calendar-list__event-venue') || b.querySelector('.tribe-events-venue-details') || b.querySelector('.tribe-venue');
+    if (vEl) venue = (vEl.textContent||'').replace(/\s+/g,' ').trim();
+
+    var isOnline = /online|virtual/i.test(venue) || /online|virtual/i.test(dtText);
+    var desc = (venue ? venue : 'UBC Vancouver') + (isOnline ? ' · Online' : '');
+
+    out.push({
+      id: 'ubc-'+Math.random().toString(36).slice(2),
+      title: title,
+      desc: desc,
+      timeText: dtText || 'See details',
+      lat: null, lng: null,
+      interest: 'medium',
+      filt: 'ubc',
+      isOnline: isOnline,
+      img: null,
+      eventDateMs: (eventDateMs || (parseDateTimeRange(dtText||'').startMs)),
+      detail: {
+        venue: venue || 'TBD',
+        organizer: 'UBC Career Centre',
+        address: isOnline ? 'Online' : 'UBC Vancouver',
+        date: dtText || '',
+        startTime: (parseDateTimeRange(dtText||'').startTime||''),
+        endTime: (parseDateTimeRange(dtText||'').endTime||''),
+        genre: 'Workshop / Career',
+        price: 'Varies',
+        url: url,
+        source: 'UBCevents (UBC Career Centre)'
+      }
+    });
+  });
+  return out;
+}
+
+function parseLibCalWidget(html){
+  var doc = new DOMParser().parseFromString(html, 'text/html');
+  // LibCal widget uses various markup; we grab event links and nearby context text.
+  var links = Array.prototype.slice.call(doc.querySelectorAll('a[href]'))
+    .filter(function(a){
+      var h = a.getAttribute('href') || '';
+      return /libcal\.library\.ubc\.ca\//i.test(h) && /event/i.test(h);
+    });
+
+  var out = [];
+  links.forEach(function(a){
+    var title = (a.textContent||'').replace(/\s+/g,' ').trim();
+    var url = a.getAttribute('href') || '';
+    if (!title || !url) return;
+
+    var row = a.closest('li, div, tr') || a.parentElement;
+    var ctx = row ? (row.textContent||'') : title;
+    ctx = ctx.replace(/\s+/g,' ').trim();
+
+    var isOnline = /online|zoom|virtual/i.test(ctx) || /online|zoom|virtual/i.test(title);
+
+
+    // try to extract a date-like substring
+    var when = '';
+    var m = ctx.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\s+\d{1,2}(,\s*\d{4})?/i);
+    if (m) when = m[0];
+
+    out.push({
+      id: 'libcal-'+Math.random().toString(36).slice(2),
+      title: title,
+      desc: 'UBC Library · Workshop',
+      timeText: when ? (when + ' · See details') : 'See details',
+      lat: null, lng: null,
+      interest: 'low',
+      filt: 'ubc',
+      isOnline: isOnline,
+      img: null,
+      eventDateMs: (when ? (parseDateTimeRange(when).startMs) : null),
+      detail: {
+        venue: 'UBC Library',
+        organizer: 'UBC Library',
+        address: 'UBC Vancouver',
+        date: when,
+        genre: 'Workshop / Library',
+        price: 'Varies',
+        url: url,
+        source: 'LibCal (UBC Library)'
+      }
+    });
+  });
+  return out;
+}
+
+
+// ── Venue resolution (UBC building lookup → Nominatim fallback) ───────────────
+var venueCache = new Map();
+
+// Nominatim-only geocoder (no UBC lookup, to avoid recursion)
+function geocodeVenueNominatim(name, cb){
+  if (!name) return cb(null);
+  var key = String(name).toLowerCase();
+  if (venueCache.has(key)) return cb(venueCache.get(key));
+  // Bias toward UBC / Vancouver
+  var q = encodeURIComponent(name + ', Vancouver BC');
+  var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + q;
+  fetch(url, { headers: { 'Accept':'application/json' }})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var pt = d && d[0] ? { lat:+d[0].lat, lng:+d[0].lon, address: d[0].display_name } : null;
+      venueCache.set(key, pt);
+      cb(pt);
+    })
+    .catch(function(){
+      venueCache.set(key, null);
+      cb(null);
+    });
+}
+
+function geocodeVenue(name, cb){
+  if (!name) return cb(null);
+
+  // Ensure UBC building dataset is loaded first (required for correct UBC venue pins)
+  if (ubcBldgLoadPromise) {
+    ubcBldgLoadPromise.then(function(){
+      try {
+        var hit = lookupUBCBuilding(name);
+        if (hit) return cb({lat:hit.lat, lng:hit.lng, address:hit.address});
+      } catch(_e){}
+      geocodeVenueNominatim(name, cb);
+    }).catch(function(){
+      // If dataset load failed, still try the small fallback lookup then Nominatim
+      try {
+        var hit2 = lookupUBCBuilding(name);
+        if (hit2) return cb({lat:hit2.lat, lng:hit2.lng, address:hit2.address});
+      } catch(_e2){}
+      geocodeVenueNominatim(name, cb);
+    });
+    return;
+  }
+
+  // If for some reason we don't have the promise yet, start loading and retry.
+  loadUBCBuildings().finally(function(){
+    geocodeVenue(name, cb);
+  });
+}
+
+
+// ── UBC building lookup (deterministic pins for demo quality) ───────────────
+var UBC_BUILDINGS_FALLBACK = {
+  "hugh dempster pavilion": { lat:49.26162, lng:-123.24819, address:"6245 Agronomy Rd, Vancouver, BC V6T 1Z4" },
+  "irving k barber learning centre": { lat:49.26769, lng:-123.25274, address:"1961 East Mall, Vancouver, BC V6T 1Z1" },
+  "koerner library": { lat:49.26665, lng:-123.25513, address:"1958 Main Mall, Vancouver, BC V6T 1Z2" },
+  "nest": { lat:49.26660, lng:-123.24971, address:"6133 University Blvd, Vancouver, BC V6T 1Z1" },
+  "robert h lee alumni centre": { lat:49.26504, lng:-123.25690, address:"6163 University Blvd, Vancouver, BC V6T 1Z1" }
+};
+
+// ── UBC venue/building dataset lookup (startup load) ─────────────────────────
+// Source: UBCGeodata "ubcv_buildings_simple.csv" (UBC Vancouver campus locations)
+// URL: https://raw.githubusercontent.com/UBCGeodata/ubc-geospatial-opendata/master/ubcv/locations/csv/ubcv_buildings_simple.csv
+var UBC_BUILDING_CSV_URL = "https://raw.githubusercontent.com/UBCGeodata/ubc-geospatial-opendata/master/ubcv/locations/csv/ubcv_buildings_simple.csv";
+var ubcBldgIndex = new Map();      // normKey -> {lat,lng,address,name,code}
+var ubcBldgKeyList = [];           // for contains/fallback matching
+var ubcBldgLoadPromise = null;
+
+function normKey(s){
+  return String(s||"")
+    .toLowerCase()
+    .trim()
+    .replace(/&/g," and ")
+    .replace(/[\u2019’]/g,"'")
+    .replace(/[^a-z0-9\s']/g," ")
+    .replace(/\b(the|ubc|university of british columbia)\b/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+// remove common suffixes to create extra alias keys (helps "Pavilion" vs "Building")
+function softenKey(k){
+  return String(k||"")
+    .replace(/\b(building|centre|center|hall|pavilion|library|school|studio|complex|arena|gymnasium|gym|auditorium)\b/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function parseCsvLine(line){
+  // Handles quotes with commas.
+  var out = [], cur = "", inQ = false;
+  for (var i=0;i<line.length;i++) {
+    var ch = line[i];
+    if (ch === '"' ) {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      out.push(cur); cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+function loadUBCBuildings(){
+  if (ubcBldgLoadPromise) return ubcBldgLoadPromise;
+  ubcBldgLoadPromise = fetchText(UBC_BUILDING_CSV_URL).then(function(txt){
+    if (!txt || txt.length < 50) throw new Error("Empty UBC buildings CSV");
+    var lines = txt.split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) throw new Error("UBC buildings CSV has no rows");
+    var header = parseCsvLine(lines[0]).map(function(h){return h.trim();});
+    var idx = function(name){ return header.indexOf(name); };
+    var iName = idx("NAME"), iCode = idx("BLDG_CODE"), iAddr = idx("PRIMARY_ADDRESS"), iLat = idx("LAT"), iLon = idx("LONG");
+    if (iName < 0 || iAddr < 0 || iLat < 0 || iLon < 0) throw new Error("Unexpected UBC buildings CSV schema");
+
+    function addKey(key, rec){
+      if (!key) return;
+      if (!ubcBldgIndex.has(key)) {
+        ubcBldgIndex.set(key, rec);
+        ubcBldgKeyList.push(key);
+      }
+    }
+
+    for (var r=1; r<lines.length; r++) {
+      var row = parseCsvLine(lines[r]);
+      if (row.length < header.length) continue;
+      var name = (row[iName]||"").trim();
+      var code = (row[iCode]||"").trim();
+      var addr = (row[iAddr]||"").trim();
+      var a = parseFloat(row[iLat]);   // NOTE: dataset columns are LAT/LONG but values appear swapped in many rows
+      var b = parseFloat(row[iLon]);
+      if (!isFinite(a) || !isFinite(b)) continue;
+      var lat, lng;
+      // Heuristic: longitude magnitude > 90
+      if (Math.abs(a) > 90 && Math.abs(b) <= 90) { lng = a; lat = b; }
+      else if (Math.abs(b) > 90 && Math.abs(a) <= 90) { lng = b; lat = a; }
+      else { lat = b; lng = a; } // fallback
+      if (!isFinite(lat) || !isFinite(lng)) continue;
+
+      var rec = { lat: lat, lng: lng, address: addr, name: name, code: code };
+      var k1 = normKey(name);
+      addKey(k1, rec);
+      addKey(softenKey(k1), rec);
+      if (code) addKey(normKey(code), rec);
+      if (addr) addKey(normKey(addr), rec);
+    }
+
+    // Merge fallback entries (don't override dataset)
+    for (var k in UBC_BUILDINGS_FALLBACK) {
+      var kk = normKey(k);
+      if (!ubcBldgIndex.has(kk)) {
+        ubcBldgIndex.set(kk, UBC_BUILDINGS_FALLBACK[k]);
+        ubcBldgKeyList.push(kk);
+      }
+    }
+    console.log("UBC buildings loaded:", ubcBldgIndex.size);
+    try{ populateBldgDatalist(); }catch(_e){}
+    return true;
+  }).catch(function(e){
+    console.warn("UBC buildings load failed:", e.message);
+    // Still keep fallback
+    for (var k in UBC_BUILDINGS_FALLBACK) {
+      var kk = normKey(k);
+      if (!ubcBldgIndex.has(kk)) {
+        ubcBldgIndex.set(kk, UBC_BUILDINGS_FALLBACK[k]);
+        ubcBldgKeyList.push(kk);
+      }
+    }
+    return false;
+  });
+  return ubcBldgLoadPromise;
+}
+
+function lookupUBCBuilding(name){
+  if(!name) return null;
+  var k = normKey(name);
+  if (ubcBldgIndex.has(k)) return ubcBldgIndex.get(k);
+  var sk = softenKey(k);
+  if (ubcBldgIndex.has(sk)) return ubcBldgIndex.get(sk);
+
+  // Contains matching (robust for variations like "Room 101, Hugh Dempster Pavilion")
+  for (var i=0; i<ubcBldgKeyList.length; i++) {
+    var key = ubcBldgKeyList[i];
+    if (!key) continue;
+    if (k.indexOf(key) >= 0 || key.indexOf(k) >= 0) return ubcBldgIndex.get(key);
+  }
+  return null;
+}
+
+
+function parseEventsCalendarDetail(html){
+  var doc = new DOMParser().parseFromString(html,'text/html');
+  var venue = '';
+  var address = '';
+  var organizer = '';
+  var vn = doc.querySelector('.tribe-venue a, .tribe-venue, .tribe-events-venue-details .tribe-venue');
+  if (vn) venue = (vn.textContent||'').replace(/\s+/g,' ').trim();
+  var street = doc.querySelector('.tribe-street-address');
+  var loc = doc.querySelector('.tribe-locality');
+  var reg = doc.querySelector('.tribe-region');
+  var pc = doc.querySelector('.tribe-postal-code');
+  var ctry = doc.querySelector('.tribe-country-name');
+  if (street || loc || reg || pc || ctry){
+    address = [street&&street.textContent.trim(), loc&&loc.textContent.trim(), reg&&reg.textContent.trim(), pc&&pc.textContent.trim(), ctry&&ctry.textContent.trim()]
+      .filter(Boolean).join(', ');
+  } else {
+    var a = doc.querySelector('.tribe-address, .tribe-events-address');
+    if (a) address = (a.textContent||'').replace(/\s+/g,' ').trim();
+  }
+  var org = doc.querySelector('.tribe-organizer, .tribe-events-organizer');
+  if (org) organizer = (org.textContent||'').replace(/\s+/g,' ').trim();
+  return { venue: venue, address: address, organizer: organizer };
+}
+
+function cleanVenue(v){
+  if(!v) return '';
+  var s = String(v).replace(/\s+/g,' ').trim();
+  s = s.replace(/^Venue\s*[:\-]\s*/i,'');
+  s = s.replace(/,?\s*(room|rm)\s*\w+.*$/i,'');
+  return s.trim();
+}
+
+function resolveUBCVenue(it){
+  if(!it || it.filt!=='ubc' || it.isOnline) return;
+  var venue = cleanVenue((it.detail && it.detail.venue) || '');
+  var addr = (it.detail && it.detail.address) || '';
+  var hit = null;
+  if (venue) hit = lookupUBCBuilding(venue);
+  if (!hit && addr) hit = lookupUBCBuilding(addr);
+  if (hit){
+    it.lat = hit.lat; it.lng = hit.lng;
+    if (hit.address) it.detail.address = hit.address;
+    if (hit.name && (!it.detail.venue || it.detail.venue==='TBD')) it.detail.venue = hit.name;
+    return;
+  }
+  // fallback: try Nominatim geocode of venue name
+  if (venue){
+    geocodeVenue(venue, function(pt){
+      if(pt){
+        it.lat = pt.lat; it.lng = pt.lng;
+        if(pt.address) it.detail.address = pt.address;
+        upsertMarker(it);
+        render();
+      }
+    });
+  }
+}
+
+function parseDateTimeRange(text){
+  // Try patterns like "March 4 @ 5:30 pm - 7:00 pm" or "Mar 4 5:30 pm – 7:00 pm"
+  var t = (text||'').replace(/\s+/g,' ').trim();
+  var out = { dateLabel:'', startTime:'', endTime:'', startMs:null, endMs:null };
+  // Date
+  var dm = t.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\s+\d{1,2}(,\s*\d{4})?/i);
+  if (dm) out.dateLabel = dm[0].replace(/\s*,\s*/g, ', ');
+  // Times
+  var tm = t.match(/(\d{1,2}:\d{2}\s*(am|pm))\s*(?:-|–|—|to)\s*(\d{1,2}:\d{2}\s*(am|pm))/i);
+  if (tm) { out.startTime = tm[1]; out.endTime = tm[3]; }
+  // If we can build a date (assume current year if missing)
+  if (out.dateLabel) {
+    var year = (new Date()).getFullYear();
+    var dateStr = out.dateLabel.match(/\d{4}/) ? out.dateLabel : (out.dateLabel + ', ' + year);
+    var base = Date.parse(dateStr);
+    if (!isNaN(base) && out.startTime) {
+      var s = Date.parse(dateStr + ' ' + out.startTime);
+      var e = out.endTime ? Date.parse(dateStr + ' ' + out.endTime) : null;
+      out.startMs = isNaN(s) ? base : s;
+      out.endMs = (e && !isNaN(e)) ? e : null;
+    } else if (!isNaN(base)) {
+      out.startMs = base;
+    }
+  }
+  return out;
+}
+
+// ── Online events panel (shown when zoomed into UBC) ────────────────────────
+var onlinePanel = null;
+function ensureOnlinePanel(){
+  if (onlinePanel) return onlinePanel;
+  onlinePanel = document.createElement('div');
+  onlinePanel.style.position = 'absolute';
+  onlinePanel.style.right = '12px';
+  onlinePanel.style.bottom = '14px';
+  onlinePanel.style.width = '320px';
+  onlinePanel.style.maxWidth = '46vw';
+  onlinePanel.style.background = 'white';
+  onlinePanel.style.border = '1px solid #e2e8f0';
+  onlinePanel.style.borderRadius = '12px';
+  onlinePanel.style.boxShadow = '0 8px 24px rgba(0,0,0,.14)';
+  onlinePanel.style.padding = '10px 12px';
+  onlinePanel.style.zIndex = '1200';
+  onlinePanel.style.display = 'none';
+  onlinePanel.innerHTML = '<div style="font-weight:800;font-size:12px;color:#002145;margin-bottom:6px;">Online workshops (UBC)</div><div id="onlineList" style="display:flex;flex-direction:column;gap:6px;"></div>';
+  document.body.appendChild(onlinePanel);
+  return onlinePanel;
+}
+function inUBCView(){
+  if (!userMk) return false;
+  var z = map.getZoom();
+  if (z < 14) return false;
+  var b = map.getBounds();
+  return b.contains([UBC_POINT.lat, UBC_POINT.lng]);
+}
+
+function loadUBC(done){
+  // Ensure UBC building index is loaded for deterministic venue→coord
+  loadUBCBuildings();
+
+  // Simple local cache to avoid flaky scrape variance (e.g., proxy hiccups)
+  function readCache(key, maxAgeMs){
+    try{
+      var raw = localStorage.getItem(key);
+      if(!raw) return null;
+      var obj = JSON.parse(raw);
+      if(!obj || !obj.ts || !Array.isArray(obj.items)) return null;
+      if(Date.now() - obj.ts > maxAgeMs) return null;
+      return obj.items;
+    }catch(_e){ return null; }
+  }
+  function writeCache(key, arr){
+    try{ localStorage.setItem(key, JSON.stringify({ts:Date.now(), items:arr})); }catch(_e){}
+  }
+
+  function fetchTextRetry(url, tries){
+    return fetchText(url).catch(function(e){
+      if(tries<=1) throw e;
+      return new Promise(function(res){ setTimeout(res, 500); }).then(function(){ return fetchTextRetry(url, tries-1); });
+    });
+  }
+
+  var pending = 2;
+  function finish(){ if(--pending===0) done(); }
+
+  function ingestUBCItems(arr){
+    if(!Array.isArray(arr)) return;
+    // de-dup by URL (strong) else by title+date (weak)
+    var seen = new Set();
+    arr.forEach(function(it){
+      var u = it && it.detail && it.detail.url ? it.detail.url : '';
+      var k = u || ((it.title||'') + '|' + (it.eventDateMs||''));
+      if(k && seen.has(k)) return;
+      if(k) seen.add(k);
+
+      items.push(it);
+
+      // Resolve building deterministically if possible, else geocode once.
+      try{
+        if(it && it.filt==='ubc' && !it.isOnline){
+          resolveUBCVenue(it);
+          if(isFinite(it.lat) && isFinite(it.lng)){
+            upsertMarker(it);
+          } else {
+            var vn = (it.detail && it.detail.venue) ? it.detail.venue : (it.venue||it.desc||'');
+            if(vn){
+              geocodeVenue(vn, function(pt){
+                if(pt){
+                  it.lat=pt.lat; it.lng=pt.lng;
+                  if(pt.address){ it.detail = it.detail||{}; it.detail.address = pt.address; }
+                  upsertMarker(it);
+                  render();
+                }
+              });
+            }
+          }
+        }
+      }catch(_e){}
+    });
+  }
+
+  // 1) UBC Career Centre events listing (UBCevents)
+  (function(){
+    var cacheKey = 'cache_ubc_career';
+    fetchTextRetry('https://events.ubc.ca/organizer/ubc-career-centre/', 2)
+      .then(function(html){
+        var arr = parseUBCEvents(html) || [];
+        if(arr.length) writeCache(cacheKey, arr);
+        else {
+          var cached = readCache(cacheKey, 24*3600*1000);
+          if(cached) arr = cached;
+        }
+        ingestUBCItems(arr);
+      })
+      .catch(function(e){
+        console.warn('UBCevents load failed:', e.message);
+        var cached = readCache(cacheKey, 24*3600*1000);
+        if(cached) ingestUBCItems(cached);
+      })
+      .finally(finish);
+  })();
+
+  // 2) UBC Library LibCal widget
+  (function(){
+    var cacheKey = 'cache_ubc_libcal';
+    fetchTextRetry('https://libcal.library.ubc.ca/widget/events/minicalendar?cal_id=7544&iid=3517&l=10&sp=0&tar=0&z=33914', 2)
+      .then(function(html){
+        var arr = parseLibCalWidget(html) || [];
+        if(arr.length) writeCache(cacheKey, arr);
+        else {
+          var cached = readCache(cacheKey, 24*3600*1000);
+          if(cached) arr = cached;
+        }
+        ingestUBCItems(arr);
+      })
+      .catch(function(e){
+        console.warn('LibCal load failed:', e.message);
+        var cached = readCache(cacheKey, 24*3600*1000);
+        if(cached) ingestUBCItems(cached);
+      })
+      .finally(finish);
+  })();
+}
+
+// ── Vancouver Open Data ───────────────────────────────────────────────────────
+function coordsOf(f){
+  var g=f.geometry; if(!g||!g.coordinates) return null;
+  var c=g.coordinates;
+  if(g.type==='Point') return {lat:c[1],lng:c[0]};
+  if(g.type==='MultiPoint') return {lat:c[0][1],lng:c[0][0]};
+  if(g.type==='Polygon'){
+    var ring=c[0]; if(!ring||!ring.length) return null;
+    var sl=0,sn=0; ring.forEach(function(p){sl+=p[1];sn+=p[0];});
+    return {lat:sl/ring.length,lng:sn/ring.length};
+  }
+  return null;
+}
+function loadODS(ds,limit,mapFn,done){
+  fetch('https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/'+ds+'/exports/geojson?limit='+limit)
+    .then(function(r){return r.json();})
+    .then(function(gj){
+      (gj.features||[]).forEach(function(f){
+        var pt=coordsOf(f); if(!pt||isNaN(pt.lat)||isNaN(pt.lng)) return;
+        var it=mapFn(f,pt); if(it) items.push(it);
+        // Geocode venue to place pin at the actual building (if not online)
+        try {
+          if (it && it.filt==='ubc' && !it.isOnline) {
+            var vn = (it.detail && it.detail.venue) ? it.detail.venue : (it.desc||'');
+            if (vn) geocodeVenue(vn, function(pt){ if(pt){ it.lat=pt.lat; it.lng=pt.lng; if(pt.address){ it.detail = it.detail||{}; it.detail.address = pt.address; } upsertMarker(it); render(); } });
+          }
+        } catch(_e){}
+
+      }); done();
+    }).catch(function(){done();});
+}
+function loadVan(done){
+  var pending=5;
+  function tick(){if(--pending===0) done();}
+
+  loadODS('parks',300,function(f,pt){
+    var p=f.properties;
+    return {id:'pk'+Math.random(),title:p.name||'Park',
+      desc:(p.neighbourhoodname||'')+(p.hectare?' · '+p.hectare+' ha':''),
+      timeText:'Open space',lat:pt.lat,lng:pt.lng,
+      interest:(+p.hectare>2?'high':'medium'),filt:'park',img:null,
+      detail:{venue:p.name,address:p.neighbourhoodname||'',date:'',genre:'',price:'Free',url:'https://opendata.vancouver.ca/explore/dataset/parks'}};
+  },tick);
+
+  // Public Art — enriched with artist, description, photo
+  loadODS('public-art',300,function(f,pt){
+    var p=f.properties;
+    // Vancouver Open Data public-art fields
+    var artist = p.primarycontact || p.artist || '';
+    var desc = p.descriptionofwork || p.artistprojectstatement || '';
+    var photo = p.photourl || p.imageurl || p.photo_url || '';
+    var type = p.type || p.artworktype || '';
+    var neighbourhood = p.neighbourhood || p.geo_local_area || '';
+    return {
+      id:'ar'+Math.random(),
+      title:p.title||p.name||'Artwork',
+      desc:[type, neighbourhood].filter(Boolean).join(' · '),
+      timeText:'Installed '+(p.yearofinstallation||'—'),
+      lat:pt.lat,lng:pt.lng,
+      interest:'medium',filt:'art',
+      img: photo || null,
+      detail:{
+        venue: p.locationonsite || neighbourhood || '',
+        address: neighbourhood || '',
+        date: 'Installed '+(p.yearofinstallation||'—'),
+        genre: type || '',
+        price: 'Free · Permanent installation',
+        artist: artist,
+        description: desc ? desc.slice(0,280) : '',
+        url: p.url || p.sourceurl || 'https://opendata.vancouver.ca/explore/dataset/public-art'
+      }
+    };
+  },tick);
+
+  loadODS('issued-building-permits',200,function(f,pt){
+    var p=f.properties;
+    return {id:'pm'+Math.random(),title:p.typeofwork||'Building Permit',
+      desc:(p.address||'')+(p.projectdescription?' · '+p.projectdescription.slice(0,50):''),
+      timeText:'Issued: '+((p.issuedate||'').slice(0,10)||'—'),
+      lat:pt.lat,lng:pt.lng,interest:'low',filt:'permit',img:null,
+      detail:{venue:p.address,address:p.address||'',date:(p.issuedate||'').slice(0,10),genre:p.typeofwork||'',price:'',url:'https://opendata.vancouver.ca/explore/dataset/issued-building-permits'}};
+  },tick);
+
+  loadODS('community-centres',100,function(f,pt){
+    var p=f.properties;
+    return {id:'cc'+Math.random(),title:p.name||'Community Centre',
+      desc:p.address||'',timeText:'See Parks Board for schedule',
+      lat:pt.lat,lng:pt.lng,interest:'high',filt:'cc',img:null,
+      detail:{venue:p.name,address:p.address||'',date:'',genre:'',price:'Varies',url:'https://vancouver.ca/parks-recreation-culture/community-centres.aspx'}};
+  },tick);
+}
+
+// ── Markers ───────────────────────────────────────────────────────────────────
+var COLS={event:'#1a73e8',park:'#166534',art:'#7e22ce',permit:'#c2410c',cc:'#0369a1',ubc:'#002145'};
+function makePinIcon(color, scale){
+  var s = scale || 1;
+  var w = 28*s, h = 40*s;
+
+  var svg =
+    '<svg width="'+w+'" height="'+h+'" viewBox="0 0 28 40" xmlns="http://www.w3.org/2000/svg" style="display:block; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.35));">' +
+      '<circle cx="14" cy="14" r="10" fill="'+color+'" opacity="0.25"/>' +
+      '<path d="M14 39s10-12.2 10-21C24 9.7 19.5 4 14 4S4 9.7 4 18c0 8.8 10 21 10 21z" fill="'+color+'" stroke="#ffffff" stroke-width="2"/>' +
+      '<circle cx="14" cy="18" r="4.5" fill="#ffffff"/>' +
+    '</svg>';
+
+  return L.divIcon({
+    className:'pin-icon',
+    html: svg,
+    iconSize:[w,h],
+    iconAnchor:[w/2,h],
+    popupAnchor:[0,-h+8]
+  });
+}
+
+
+function upsertMarker(it){
+  if(!it) return;
+  // Do not place pins for online events
+  if(it.isOnline) return;
+
+  var hasCoord = isFinite(it.lat) && isFinite(it.lng);
+  if(!hasCoord) return; // wait until we have a real coordinate
+
+  var existing = mkMap.get(it.id);
+  var lat = it.lat, lng = it.lng;
+
+  if(existing){
+    existing.setLatLng([lat,lng]);
+    return;
+  }
+
+  var col = COLS[it.filt]||'#888';
+  var icon = makePinIcon(col, it.filt==='event' ? 1.0 : 0.95);
+  var m = L.marker([lat,lng],{icon:icon,opacity:0}).addTo(mkLayer);
+  m.bindPopup('');
+  (function(id){m.on('click',function(){selectItem(id,true);});})(it.id);
+  mkMap.set(it.id,m);
+}
+
+function buildMk(){
+  mkLayer.clearLayers(); mkMap.clear();
+  items.forEach(function(it){
+    if(it.isOnline) return;
+    if(!isFinite(it.lat)||!isFinite(it.lng)) return;
+    var col = COLS[it.filt]||'#888';
+    var icon = makePinIcon(col, it.filt==='event' ? 1.0 : 0.95);
+    var m=L.marker([it.lat,it.lng],{icon:icon,opacity:0}).addTo(mkLayer);
+    m.bindPopup('');
+    (function(id){m.on('click',function(){selectItem(id,true);});})(it.id);
+    mkMap.set(it.id,m);
+  });
+}
+
+// ── Isochrone ─────────────────────────────────────────────────────────────────
+function fetchIso(lat,lng){
+  if(isoBusy) return;
+  isoBusy=true;
+  pill('pIso','Fetching…','warn');
+  note('⏳ Fetching road-network isochrone…');
+  fetch('https://api.openrouteservice.org/v2/isochrones/'+tMode,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':ORS_KEY},
+    body:JSON.stringify({locations:[[lng,lat]],range:[mins*60],range_type:'time',smoothing:0.25})
+  }).then(function(r){
+    if(!r.ok) return r.text().then(function(t){throw new Error('ORS '+r.status+': '+t.slice(0,80));});
+    return r.json();
+  }).then(function(d){
+    var feat=d.features&&d.features[0]; if(!feat) throw new Error('No feature');
+    if(isoLayer) map.removeLayer(isoLayer);
+    isoLayer=L.geoJSON(feat,{style:{color:'#1a73e8',fillOpacity:0.08,weight:2,dashArray:'6 3'}}).addTo(map);
+    isoPoly=feat.geometry;
+    pill('pIso','Road network ✓','ok');
+    note('✅ Real isochrone · '+(tMode==='foot-walking'?'Walk':'Bike')+' '+mins+' min');
+  }).catch(function(e){
+    console.warn('ORS:',e.message);
+    isoPoly=null;
+    if(isoLayer) map.removeLayer(isoLayer);
+    var r=mins*SPD[tMode];
+    isoLayer=L.circle([lat,lng],{radius:r,color:'#1a73e8',fillOpacity:0.07,weight:1.5,dashArray:'6 3'}).addTo(map);
+    pill('pIso','Circle fallback','warn');
+    note('⚠ ORS unavailable — circular approx (~'+r+'m)');
+  }).finally(function(){isoBusy=false;render();});
+}
+
+
+// ── Routing (OpenRouteService Directions) ─────────────────────────────────────
+var routeLayer = null;
+function clearRoute(){
+  if(routeLayer){ map.removeLayer(routeLayer); routeLayer=null; }
+}
+function drawRouteGeoJSON(gj){
+  clearRoute();
+  routeLayer = L.geoJSON(gj, {
+    interactive:false,
+    style: function(){
+      // Explicit color so the route is always visible (Leaflet defaults can vary)
+      return { color:'#111', weight: 6, opacity: 0.95 };
+    }
+  }).addTo(map);
+
+  // Keep the route above isochrone/markers even if other layers are added right after.
+  try { routeLayer.bringToFront(); } catch(_e){}
+  setTimeout(function(){ try{ if(routeLayer) routeLayer.bringToFront(); }catch(_e){} }, 60);
+
+  try { map.fitBounds(routeLayer.getBounds(), { padding:[30,30] }); } catch(_e){}
+}
+
+function drawRouteFallback(fromLat, fromLng, toLat, toLng){
+  // Fallback when ORS directions is unavailable: a simple straight line.
+  clearRoute();
+  routeLayer = L.polyline([[fromLat, fromLng],[toLat, toLng]], {
+    color:'#111',
+    weight: 5,
+    opacity: 0.85,
+    dashArray: '8 6'
+  }).addTo(map);
+  try { routeLayer.bringToFront(); } catch(_e){}
+  try { map.fitBounds(routeLayer.getBounds(), { padding:[30,30] }); } catch(_e){}
+}
+function fetchRoute(fromLat, fromLng, toLat, toLng){
+  if(!isFinite(fromLat)||!isFinite(fromLng)||!isFinite(toLat)||!isFinite(toLng)) return;
+
+  // Helpful diagnostics: visible note + console.
+  console.log('Routing from', fromLat, fromLng, 'to', toLat, toLng, 'mode', tMode);
+  note('🧭 Calculating route…');
+
+  fetch('https://api.openrouteservice.org/v2/directions/' + tMode + '/geojson', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':ORS_KEY},
+    body: JSON.stringify({ coordinates: [[fromLng, fromLat],[toLng, toLat]] })
+  }).then(function(r){
+    if(!r.ok) return r.text().then(function(t){
+      throw new Error('ORS ' + r.status + ': ' + (t||'').slice(0,140));
+    });
+    return r.json();
+  }).then(function(gj){
+    drawRouteGeoJSON(gj);
+    note('✅ Route drawn on map.');
+  }).catch(function(e){
+    // When ORS directions fails (CORS, quota, key, downtime), draw a visible fallback line.
+    console.warn('Route:', e && e.message ? e.message : e);
+    drawRouteFallback(fromLat, fromLng, toLat, toLng);
+    note('⚠️ ORS route unavailable — showing straight-line fallback.');
+  });
+}
+window.routeTo = function(lat,lng,bldgName){
+  if(!userMk){ note('📍 Click “My location” first.'); return; }
+  if(!isFinite(lat)||!isFinite(lng)){ note('⚠️ This event has no coordinates yet.'); return; }
+  var u = userMk.getLatLng();
+
+  // If we have a building polygon for this venue, route to the nearest boundary point (better entrance behavior).
+  var destLat = lat, destLng = lng;
+  try{
+    var key = (bldgName==null?'':String(bldgName)).trim().toLowerCase();
+    var poly = key ? bldgPolyCache.get(key) : null;
+    if(poly && poly.latlngs && poly.latlngs.length>=2){
+      var near = nearestPointOnRing(u.lat, u.lng, poly.latlngs);
+      if(near && isFinite(near[0]) && isFinite(near[1])){ destLat = near[0]; destLng = near[1]; }
+    }
+  }catch(_e){}
+
+  fetchRoute(u.lat, u.lng, destLat, destLng);
+};
+window.clearRoute = clearRoute;
+
+function pip(lat,lng,geom){
+  if(!geom) return null;
+  var rings=geom.type==='Polygon'?[geom.coordinates[0]]:geom.type==='MultiPolygon'?geom.coordinates.map(function(p){return p[0];}):null;
+  if(!rings) return null;
+  var inside=false;
+  rings.forEach(function(ring){
+    for(var i=0,j=ring.length-1;i<ring.length;j=i++){
+      var xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
+      if(((yi>lat)!==(yj>lat))&&(lng<(xj-xi)*(lat-yi)/(yj-yi)+xi)) inside=!inside;
+    }
+  });
+  return inside;
+}
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+function setMode(m){
+  tMode=m;
+  document.getElementById('btnWalk').className='btn btn-walk'+(m==='foot-walking'?' on':'');
+  document.getElementById('btnBike').className='btn btn-bike'+(m==='cycling-regular'?' on':'');
+  updateModeLabel();
+  if(userMk){isoPoly=null;var ll=userMk.getLatLng();fetchIso(ll.lat,ll.lng);}
+}
+function onSlider(){
+  mins=parseInt(document.getElementById('sMin').value);
+  updateModeLabel();
+  if(userMk){isoPoly=null;var ll=userMk.getLatLng();fetchIso(ll.lat,ll.lng);}
+}
+function updateModeLabel(){
+  var lbl=tMode==='foot-walking'?'Walk':'Bike';
+  document.getElementById('rLbl').textContent=lbl+' · '+mins+' min';
+  pill('pMode',lbl+' · '+mins+' min','gray');
+}
+function toggleFar(){
+  showFar=!showFar;
+  document.getElementById('btnFar').textContent=showFar?'➖ Hide farther events':'➕ Show farther events';
+  render();
+}
+function resetDiscovery(){
+  firstListAt=null;
+  firstDiscDone=false;
+  pill('pDisc','Time to first click: —','gray');
+}
+
+function setLoc(lat,lng,fly){
+  if(userMk) map.removeLayer(userMk);
+  userMk=L.marker([lat,lng],{draggable:true}).addTo(map).bindPopup('Your location');
+  if(fly) map.flyTo([lat,lng],14);
+
+  // Reset "time to first click" whenever the anchor location changes
+  selId=null;
+  evListLimit=10;
+  resetDiscovery();
+  clearRoute();
+
+  // Give immediate visual feedback while ORS fetch runs
+  isoPoly=null;
+  if(isoLayer) map.removeLayer(isoLayer);
+  isoLayer=L.circle([lat,lng],{radius:mins*SPD[tMode],color:'#1a73e8',fillOpacity:0.07,weight:1.5,dashArray:'6 3'}).addTo(map);
+  pill('pIso','Fetching…','warn');
+  note('⏳ Fetching road-network isochrone…');
+
+  userMk.on('dragend',function(){
+    var ll=userMk.getLatLng();
+    selId=null;
+    resetDiscovery();
+    clearRoute();
+    isoPoly=null;
+    if(isoLayer) map.removeLayer(isoLayer);
+    isoLayer=L.circle([ll.lat,ll.lng],{radius:mins*SPD[tMode],color:'#1a73e8',fillOpacity:0.07,weight:1.5,dashArray:'6 3'}).addTo(map);
+    pill('pIso','Fetching…','warn');
+    note('⏳ Fetching road-network isochrone…');
+    fetchIso(ll.lat,ll.lng);
+  });
+
+  fetchIso(lat,lng);
+}
+function setDemo(){setLoc(49.2827,-123.1207,true);}
+function getUserLocation(){
+  if(!navigator.geolocation){alert('Geolocation not supported.');return;}
+  navigator.geolocation.getCurrentPosition(
+    function(p){setLoc(p.coords.latitude,p.coords.longitude,true);},
+    function(){alert('Could not get location — using Downtown demo.');setDemo();}
+  );
+}
+map.on('click',function(e){setLoc(e.latlng.lat,e.latlng.lng,false);});
+
+// ── Render ────────────────────────────────────────────────────────────────────
+var TTAG={
+  event: '<span class="tg te">📅 Local Event</span>',
+  park:  '<span class="tg tp">🌳 Park</span>',
+  art:   '<span class="tg ta">🎨 Public Art</span>',
+  permit:'<span class="tg tx">🏗 Permit</span>',
+  cc:    '<span class="tg tc">🏢 Centre</span>',
+  ubc:   '<span class="tg tu">🎓 UBC</span>'
+};
+
+function render(){
+  if(!userMk) return;
+  var center=userMk.getLatLng();
+  var fallR=mins*SPD[tMode];
+
+  // --- Partition items: events vs places ---
+  var eventsBase = items.filter(function(it){ return it.filt==='event' || it.filt==='ubc'; });
+  var placesBase = items.filter(function(it){ return it.filt!=='event' && it.filt!=='ubc'; });
+
+  // Apply event source filters
+  var eventsPool = eventsBase.filter(function(it){ return eventFilters.has(it.filt); });
+
+  // Time window filter — only applies to events
+  if (timeWindow) {
+    var now = Date.now();
+    var windowMs;
+    if (timeWindow==='future') windowMs = null; // any time in the future
+    else if (timeWindow==='24h') windowMs = 86400000;
+    else if (timeWindow==='3d') windowMs = 259200000;
+    else if (timeWindow==='7d') windowMs = 604800000;
+    else if (timeWindow==='past30') {
+      // past 30 days (events that already happened)
+      windowMs = 30*86400000;
+    }
+    else if (timeWindow==='month') {
+      var d = new Date(now);
+      var end = new Date(d.getFullYear(), d.getMonth()+1, 0, 23, 59, 59, 999).getTime();
+      windowMs = end - now;
+    } else windowMs = 604800000;
+    eventsPool = eventsPool.filter(function(it){
+      if (!it.eventDateMs) return false;
+      if (timeWindow==='future') return it.eventDateMs >= now;
+      if (timeWindow==='past30') {
+        return it.eventDateMs <= now && it.eventDateMs >= (now - windowMs);
+      }
+      return it.eventDateMs >= now && it.eventDateMs <= now + windowMs;
+    });
+}
+
+// Apply places toggle + filters
+  var placesPool = [];
+  if (showAmenities) {
+    placesPool = (amenityFilters.size===0)
+      ? placesBase
+      : placesBase.filter(function(it){ return amenityFilters.has(it.filt); });
+  }
+
+  function enrich(it){
+    var useLat = (it.lat!=null)?it.lat:UBC_POINT.lat;
+    var useLng = (it.lng!=null)?it.lng:UBC_POINT.lng;
+    var dist=map.distance(center,[useLat,useLng]);
+    var inI=pip(useLat,useLng,isoPoly);
+    return {
+      id:it.id,title:it.title,desc:it.desc,timeText:it.timeText,lat:it.lat,lng:it.lng,
+      interest:it.interest,filt:it.filt,img:it.img,detail:it.detail,
+      dist:dist,
+      inRange:(inI!==null?inI:(dist<=fallR)),
+      kind:(it.filt==='tm'||it.filt==='event'||it.filt==='ubc')?'event':'place'
+    };
+  }
+
+  var evEnr = eventsPool
+    .map(enrich).sort(function(a,b){return a.dist-b.dist;});
+
+  var plEnr = placesPool.filter(function(it){return isFinite(it.lat)&&isFinite(it.lng);})
+    .map(enrich).sort(function(a,b){return a.dist-b.dist;});
+
+  // Events: within range (paginated in list)
+  var nearEvAll = evEnr.filter(function(e){return e.inRange;});
+  var nearEv = nearEvAll.slice(0, evListLimit);
+
+  // Farther-but-worth-it: only events
+  var farEv = showFar
+    ? evEnr.filter(function(e){return !e.inRange && e.interest==='high' && e.dist<=fallR*3;}).slice(0,4)
+    : [];
+
+  // Places: nearby resources
+  var nearPlAll = plEnr.filter(function(e){return e.inRange;});
+  var nearPl = nearPlAll.slice(0,10);
+
+  // Pills / counts
+  var twName = (timeWindow==='future'?'Upcoming':timeWindow==='24h'?'24 hrs':timeWindow==='3d'?'3 days':timeWindow==='7d'?'This week':timeWindow==='month'?'This month':timeWindow==='past30'?'Past 30 days':timeWindow);
+  var countLbl = 'Events: ' + nearEvAll.length + ' in range' + (timeWindow?(' · '+twName):'');
+  if (showAmenities) countLbl += ' · Places: ' + nearPlAll.length;
+  pill('pCount', countLbl, 'gray');
+
+  // Marker visibility
+  var visIds={};
+  nearEv.forEach(function(e){visIds[e.id]=true;});
+  farEv.forEach(function(e){visIds[e.id]=true;});
+  if (showAmenities) nearPl.forEach(function(e){visIds[e.id]=true;});
+
+  mkMap.forEach(function(m,id){
+    var it = items.find(function(x){return x.id===id;});
+    if(!it) return;
+    var isEvent = (it.filt==='tm'||it.filt==='event'||it.filt==='ubc');
+    if (isEvent) {
+      var inN = nearEv.some(function(e){return e.id===id;});
+      var inF = farEv.some(function(e){return e.id===id;});
+      m.setOpacity(inN?1:(inF?0.4:0));
+      if(id===selId&&(inN||inF)) m.openPopup(); else m.closePopup();
+    } else {
+      // places are only visible when the places layer is on
+      if (!showAmenities) { m.setOpacity(0); m.closePopup(); return; }
+      var inP = nearPl.some(function(e){return e.id===id;});
+      m.setOpacity(inP?1.0:0);
+      if(id===selId&&inP) m.openPopup(); else m.closePopup();
+    }
+  });
+
+  // Keep selection only if it's visible under current toggles
+  if(selId && !visIds[selId]) selId=null;
+
+  // List render
+  var el=document.getElementById('list');
+  el.innerHTML='';
+
+  // Events section
+  el.appendChild(shdr('Events', (timeWindow==='future'?'upcoming · ':'') + 'within search area · showing ' + nearEv.length + ' of ' + nearEvAll.length));
+  if(nearEv.length===0){
+    el.innerHTML += '<div class="empty"><b>No events in range</b><br>'
+      + (timeWindow ? 'Try a wider time window or clear the time filter.' : 'Try increasing time, switching mode, or changing location.')
+      + '</div>';
+  } else {
+    nearEv.forEach(function(e){ el.appendChild(mkCard(e,false)); });
+    if (nearEvAll.length > nearEv.length) {
+      el.appendChild(mkLoadMore('Load 5 more events', function(){
+        evListLimit = Math.min(evListLimit + 5, nearEvAll.length);
+        render();
+      }));
+    }
+  }
+
+  // Farther events section
+  if(showFar){
+    el.appendChild(shdr('Farther but worth it', 'high-interest events · up to 4'));
+    if(farEv.length===0){
+      var d=document.createElement('div'); d.className='ibox';
+      d.textContent='No high-interest events outside range.';
+      el.appendChild(d);
+    } else {
+      farEv.forEach(function(e){ el.appendChild(mkCard(e,true)); });
+    }
+  }
+
+  // Places section (toggleable)
+  if(showAmenities){
+    el.appendChild(shdr('Nearby places', 'resources within range · showing ' + nearPl.length + ' of ' + nearPlAll.length));
+    if(nearPl.length===0){
+      var d2=document.createElement('div'); d2.className='ibox';
+      d2.textContent='No places in range for the selected layers.';
+      el.appendChild(d2);
+    } else {
+      nearPl.forEach(function(e){ el.appendChild(mkCard(e,false)); });
+    }
+  }
+
+  if(!firstListAt && nearEv.length>0) firstListAt=performance.now();
+  // Detail uses combined pools so selection works for both
+  var allEnr = evEnr.concat(plEnr);
+  renderDet(allEnr.find(function(e){return e.id===selId;})||null);
+}
+
+function shdr(t,h){
+  var d=document.createElement('div');d.className='shdr';
+  d.innerHTML='<span>'+esc(t)+'</span><span class="h">'+esc(h)+'</span>';return d;
+}
+
+function mkLoadMore(label, onClick){
+  var wrap=document.createElement('div');
+  wrap.style.padding='10px 12px';
+  var b=document.createElement('button');
+  b.className='btn btn-more';
+  b.textContent=label;
+  b.addEventListener('click', function(e){ e.preventDefault(); onClick(); });
+  wrap.appendChild(b);
+  return wrap;
+}
+function mkCard(e,isFar){
+  var d=document.createElement('div');
+  d.className='card'+(e.id===selId?' sel':'');
+  var dist=e.dist<1000?Math.round(e.dist)+'m':(e.dist/1000).toFixed(1)+'km';
+  var imgHtml = e.img
+    ? '<img class="card-img" src="'+esc(e.img)+'" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+    : '';
+  d.innerHTML = imgHtml
+    +'<div class="card-body">'
+    +'<div class="ct">'+esc(e.title)+(isFar?'<span class="tg tf" style="margin-left:5px">Further</span>':'')+'</div>'
+    +'<div class="cm">'+esc((e.desc||'').slice(0,80))+'</div>'
+    +'<div class="cf">'
+    +'<span class="tg tg_">'+dist+'</span>'
+    +(TTAG[e.filt]||'')
+    +(e.timeText?'<span class="tg tg_" style="color:#94a3b8">'+esc(e.timeText)+'</span>':'')
+    +'</div>'
+    +'</div>';
+  (function(id){d.addEventListener('click',function(){selectItem(id,false);});})(e.id);
+  return d;
+}
+
+function selectItem(id,fromMap){
+  if(!userMk) return;
+  if(!firstDiscDone&&firstListAt){
+    firstDiscDone=true;
+    pill('pDisc','First click: '+((performance.now()-firstListAt)/1000).toFixed(1)+'s','ok');
+  }
+  selId=id;
+  var it=items.find(function(x){return x.id===id;});
+  if(it&&!fromMap){
+    if(isFinite(it.lat)&&isFinite(it.lng)) map.flyTo([it.lat,it.lng],16,{duration:.5});
+    else map.flyTo([UBC_POINT.lat,UBC_POINT.lng],15,{duration:.5});
+  }
+  render();
+  // Ensure popup shows det-body (not stale) even after filter switches
+  setTimeout(function(){
+    try {
+      var center = userMk.getLatLng();
+      // Build a lightweight enriched record for popup content
+      var it = items.find(function(x){return x.id===id;});
+      if(!it) return;
+      var useLat = isFinite(it.lat)?it.lat:UBC_POINT.lat;
+      var useLng = isFinite(it.lng)?it.lng:UBC_POINT.lng;
+      var dist = map.distance(center,[useLat,useLng]);
+      var e = Object.assign({}, it, { dist: dist, lat: useLat, lng: useLng });
+      var mk = mkMap.get(id);
+      if(!mk){
+        // create fallback marker for venue events so popup works on card click
+        upsertMarker(it);
+        mk = mkMap.get(id);
+      }
+      if(mk){ mk.setPopupContent(popupBodyHtml(e)); mk.openPopup(); }
+
+    } catch(_e){}
+  }, 30);
+}
+
+
+
+function popupBodyHtml(e){
+  if(!e) return '';
+  var d=e.detail||{};
+  var dist=e.dist<1000?Math.round(e.dist)+'m':(e.dist/1000).toFixed(1)+'km';
+  var meta = '<div class="det-meta">'+(TTAG[e.filt]||'');
+  if(d.genre) meta+='<span class="tg tg_">'+esc(d.genre)+'</span>';
+  if(d.price) meta+='<span class="tg tw">'+esc(d.price)+'</span>';
+  meta+='<span class="tg tg_">'+dist+'</span></div>';
+  var body='';
+  if(d.artist) body+='<p><b>Artist:</b> '+esc(d.artist)+'</p>';
+  if(d.description) body+='<p style="color:#64748b;font-style:italic">'+esc(d.description)+'</p>';
+  if(d.date) body+='<p><b>Date:</b> '+esc(d.date)+'</p>';
+  if(d.startTime||d.endTime){
+    var tl=(d.startTime||'')+(d.endTime?(' - '+d.endTime):'');
+    body+='<p><b>Time:</b> '+esc(tl.trim())+'</p>';
+  } else if(e.timeText){
+    body+='<p><b>Time:</b> '+esc(e.timeText)+'</p>';
+  }
+  if(d.venue) body+='<p><b>Venue:</b> '+esc(d.venue)+'</p>';
+  if(d.organizer) body+='<p><b>Organizer:</b> '+esc(d.organizer)+'</p>';
+  if(d.address&&d.address!==d.venue) body+='<p><b>Address:</b> '+esc(d.address)+'</p>';
+  if(e.isOnline) body+='<p><span class="tg tg_" style="background:#eef2f6;color:#334155;border-color:#e2e8f0">Online</span></p>';
+  var src = (d.url?('<a href="'+esc(d.url)+'" target="_blank" rel="noopener">Open source</a>'):'');
+  if(src) body+='<p>'+src+'</p>';
+  var btns = '';
+  if(!e.isOnline){
+    var venueArg = JSON.stringify((e.venue||e.loc||e.address||''));
+    btns = '<div style="display:flex;gap:8px;margin-top:10px">' +
+             '<button class="btn" style="flex:1;border:1px solid #c5d5ff;color:#1a73e8" onclick="routeTo('+e.lat+','+e.lng+','+venueArg+')">🧭 Route</button>' +
+             '<button class="btn" style="flex:1;border:1px solid #e2e8f0;color:#64748b" onclick="clearRoute()">✖ Clear</button>' +
+           '</div>';
+  }
+  return '<div class="det-body"><h3>'+esc(e.title)+'</h3>'+meta+body+btns+'</div>';
+}
+function renderDet(e){
+  var p=document.getElementById('det');
+  if(!e){p.className='det';p.innerHTML='';return;}
+  var d=e.detail||{};
+  var dist=e.dist<1000?Math.round(e.dist)+'m':(e.dist/1000).toFixed(1)+'km';
+  var tm=tMode==='foot-walking'?'walking':'bicycling';
+  var gm = (e.isOnline ? null : ('https://www.google.com/maps/dir/?api=1&destination='+e.lat+','+e.lng+'&travelmode='+tm));
+
+  var imgHtml = e.img
+    ? '<img class="det-img" src="'+esc(e.img)+'" alt="" onerror="this.style.display=\'none\'">'
+    : '';
+
+  var metaHtml = '<div class="det-meta">'+(TTAG[e.filt]||'');
+  if(d.genre) metaHtml+='<span class="tg tg_">'+esc(d.genre)+'</span>';
+  if(d.price) metaHtml+='<span class="tg tw">'+esc(d.price)+'</span>';
+  metaHtml+='<span class="tg tg_">'+dist+'</span></div>';
+
+  var bodyHtml='';
+  if(d.artist) bodyHtml+='<p><b>Artist:</b> '+esc(d.artist)+'</p>';
+  if(d.description) bodyHtml+='<p style="color:#64748b;font-style:italic">'+esc(d.description)+'</p>';
+  if(d.venue) bodyHtml+='<p><b>Venue:</b> '+esc(d.venue)+'</p>';
+  if(d.address&&d.address!==d.venue) bodyHtml+='<p><b>Address:</b> '+esc(d.address)+'</p>';
+  if(d.date) bodyHtml+='<p><b>Date:</b> '+esc(d.date)+'</p>';
+
+  var actHtml='<div class="dact">'
+    +(gm?'<a href="'+gm+'" target="_blank"><button class="btn primary">🧭 Directions</button></a>':'<button class="btn primary" disabled style="opacity:.55;cursor:not-allowed;">🧭 Directions</button>');
+  if(d.url && e.filt==='tm')
+    actHtml+='<a href="'+esc(d.url)+'" target="_blank"><button class="btn tm-btn">🎟 Get Tickets</button></a>';
+  else if(d.url)
+    actHtml+='<a href="'+esc(d.url)+'" target="_blank"><button class="btn">🔗 Source</button></a>';
+  actHtml+='<button class="btn" id="btnClose">✕</button></div>';
+
+  p.className='det on';
+  p.innerHTML=imgHtml
+    +'<div class="det-body">'
+    +'<h3>'+esc(e.title)+'</h3>'
+    +metaHtml
+    +bodyHtml
+    +actHtml
+    +'</div>';
+  document.getElementById('btnClose').addEventListener('click',function(){selId=null;render();});
+}
+
+function pill(id,txt,cls){var e=document.getElementById(id);e.textContent=txt;e.className='pill'+(cls?' '+cls:'');}
+function note(t){document.getElementById('iNote').textContent=t;}
+function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+pill('pData','Loading…','warn');
+syncFilterUI();
+resetDiscovery();
+var pending=5;
+function onLoaded(){
+  if(--pending===0){
+    buildMk();
+    var nU=items.filter(function(i){return i.filt==='ubc';}).length;
+    var nL=items.filter(function(i){return i.filt==='event';}).length;
+    pill('pData',items.length+' items ('+nU+' UBC, '+nL+' local)','ok');
+    setDemo();
+  }
+}
+loadUBCBuildings().then(onLoaded).catch(onLoaded);
+loadEB(onLoaded);
+loadVan(onLoaded);
+loadUBC(onLoaded);
+
+}); // end load
+</script>
+
+</body>
+</html>
