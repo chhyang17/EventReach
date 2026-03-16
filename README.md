@@ -12,31 +12,38 @@ EventReach is a geography-first event discovery prototype for Vancouver. Instead
 
 Set a location. Set a travel time. See what's on.
 
-The map draws a real road-network isochrone (not a circle) showing exactly where you can get to by walking or biking in your chosen time budget. Events and places inside that boundary surface in the sidebar, sorted by distance.
-
-When there's nothing on nearby, the app automatically shows parks, beaches, restaurants, and public art — so the map is always useful, not just when events are happening.
+The map draws a real road-network isochrone showing exactly where you can get to by walking or biking within your chosen time budget. Events inside that boundary appear in the sidebar, sorted by distance.
 
 ---
 
-## Features
+## Current status — v0.1 (prototype)
 
-- **Isochrone-based range** — powered by OpenRouteService, falls back to circular approximation if unavailable
-- **Multi-source events** — Ticketmaster API, UBC Career Centre & LibCal (live scraping), local seed events
-- **Time filters** — Upcoming, 24 hrs, 3 days, This week, This month, Past 30 days
-- **POI fallback** — parks, beaches, restaurants, community centres, public art auto-surface when events are sparse
-- **Places layer** — optional toggle to explore amenities alongside events
-- **Routing** — ORS turn-by-turn directions with Google Maps fallback
-- **Onboarding modal** — first-time guidance for new visitors
-- **Pagination** — event list loads 10 at a time, expandable
+This is an early prototype being used to validate core product hypotheses. The focus is on the core discovery loop, not feature completeness.
+
+**Working:**
+- Map with isochrone-based range (OpenRouteService, fallback to circle)
+- Event filters by source: Ticketmaster, UBC workshops, Local
+- Time filters: Upcoming, 24 hrs, 3 days, This week, This month, Past 30 days
+- Places layer: Parks, Public Art, Community Centres, Building Permits
+- ORS turn-by-turn routing with Google Maps fallback
+- Onboarding modal for first-time visitors
+- CartoDB map tiles (compatible with GitHub Pages)
+
+**Known bugs — being tracked in Issues:**
+- Ticketmaster events not loading
+- UBC workshop data not loading
+- Isochrone does not account for elevation (cycling times inaccurate in hilly areas e.g. Burnaby Mountain)
+- UBC event scraping unreliable when allorigins.win proxy is down
+- Sidebar too cluttered for new users (Search building, Places layer, Show farther events)
 
 ---
 
 ## Tech stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|------------|
 | Frontend | Vanilla JS + HTML, single-file, no build step |
-| Map | Leaflet.js + OpenStreetMap tiles |
+| Map | Leaflet.js + CartoDB Voyager tiles |
 | Isochrone & routing | OpenRouteService v2 API |
 | Events | Ticketmaster Discovery API |
 | UBC events | Scraped via `allorigins.win` CORS proxy |
@@ -46,27 +53,11 @@ When there's nothing on nearby, the app automatically shows parks, beaches, rest
 
 ---
 
-## Data sources
+## Hypotheses being tested
 
-| Dataset | Source | Notes |
-|---------|--------|-------|
-| Events | Ticketmaster Discovery API | 50 events, Vancouver, sorted by date |
-| UBC workshops | events.ubc.ca + LibCal | Live scrape, 24hr localStorage cache |
-| Parks | Vancouver Open Data | ~300 records |
-| Public Art | Vancouver Open Data | Artist, description, photo where available |
-| Community Centres | Vancouver Open Data | Locations only, no schedule data |
-| Restaurants | Vancouver Open Data (business licences) | Filtered to Restaurant type |
-| Beaches | Vancouver Open Data | |
-| Building permits | Vancouver Open Data | 2025+ issued permits |
-
----
-
-## Known limitations
-
-- `allorigins.win` is a public CORS proxy — UBC event scraping is unreliable when it's down. LocalStorage cache provides a 24hr fallback.
-- ORS free tier: 2,000 requests/day, 40/min. Heavy use will hit rate limits.
-- Community Centre event schedules are not available via any public API.
-- No backend — all data is fetched client-side at page load.
+1. Users have an unmet need for geography-scoped event discovery — separate from search or recommendation feeds
+2. Vancouver's public open data is dense enough to support a useful cold-start experience
+3. Users will travel further for high-interest events
 
 ---
 
@@ -76,26 +67,13 @@ When there's nothing on nearby, the app automatically shows parks, beaches, rest
 
 - The map is the product. The sidebar is secondary.
 - Accessibility (travel time) sets the default range; interest can extend it.
-- Content density matters: default to 6–12 nearby items to avoid choice overload.
-- When events are sparse, surface places — the map should always be worth opening.
-
----
-
-## Hypotheses being tested
-
-1. Users have an unmet need for geography-scoped event discovery — separate from search or recommendation feeds.
-2. Vancouver's public open data is dense enough to support a useful cold-start experience.
-3. Users will travel further for high-interest events — the accessibility + interest interaction model works.
+- When events are sparse, surface nearby places — the map should always be worth opening.
 
 ---
 
 ## Roadmap
 
-- [ ] Replace `allorigins.win` with a lightweight backend proxy
-- [ ] Event clustering for dense marker areas
-- [ ] More event sources (community boards, Eventbrite public listings)
-- [ ] Mobile-optimized layout
-- [ ] User location persistence across sessions
+See [GitHub Issues](https://github.com/chhyang17/EventReach/issues) for the full backlog.
 
 ---
 
