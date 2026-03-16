@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Spatial · Vancouver Prototype v24</title>
+<title>EventReach · Vancouver</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -97,6 +97,24 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
 .dact a .btn.tm-btn{background:#e8472a;color:#fff;border-color:#e8472a}
 .dact a .btn.tm-btn:hover{background:#c73820}
 .foot{padding:7px 14px;font-size:11px;color:#94a3b8;border-top:1px solid #eee;background:#fafbff;flex-shrink:0}
+.ftag[data-f="tm"].on{background:#e8472a;border-color:#e8472a}
+/* Welcome modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;display:flex;align-items:center;justify-content:center}
+.modal{background:#fff;border-radius:18px;padding:28px 24px;max-width:340px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.2);text-align:center}
+.modal h2{font-size:24px;font-weight:800;color:#1a73e8;margin-bottom:6px}
+.modal .tagline{font-size:13px;color:#475569;margin-bottom:18px;line-height:1.5}
+.modal .steps{text-align:left;background:#f8fafc;border-radius:10px;padding:12px 14px;margin-bottom:18px;display:flex;flex-direction:column;gap:10px}
+.modal .step{font-size:13px;color:#334155;display:flex;align-items:flex-start;gap:10px;line-height:1.4}
+.modal .step span{flex-shrink:0;font-size:18px;margin-top:1px}
+.btn-start{width:100%;padding:12px;background:#1a73e8;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-start:hover{background:#155cc0}
+/* Fallback banner */
+.fallback-banner{padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;color:#166534;font-size:12px;margin:6px 4px;line-height:1.5}
+/* New POI tag colors */
+.tr{background:#fde8e4;color:#c0311a}
+.trest{background:#fef3c7;color:#92400e}
+.tbeach{background:#e0f2fe;color:#075985}
+.tsport{background:#dcfce7;color:#166534}
 
 .leaflet-popup-content{margin:0!important;}
 .leaflet-popup-content-wrapper{padding:0!important;border-radius:12px;overflow:hidden;}
@@ -120,9 +138,22 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
 </style>
 </head>
 <body>
+<!-- Welcome modal -->
+<div class="modal-overlay" id="welcomeOverlay">
+  <div class="modal">
+    <h2>EventReach</h2>
+    <p class="tagline">Discover events and places you can actually reach — based on where you are right now.</p>
+    <div class="steps">
+      <div class="step"><span>📍</span><div>Tap <b>My location</b> or click anywhere on the map to set your starting point</div></div>
+      <div class="step"><span>🕐</span><div>Set your <b>travel time</b> — the map shows what's reachable within that range</div></div>
+      <div class="step"><span>🎯</span><div>Browse <b>events nearby</b>, or explore places when nothing's on</div></div>
+    </div>
+    <button class="btn-start" id="btnStart">Get started →</button>
+  </div>
+</div>
 <div id="map"></div>
 <div class="sidebar">
-  <div class="hdr">Spatial · Vancouver <span>v23</span></div>
+  <div class="hdr">EventReach <span>v28 · Vancouver</span></div>
   <div class="pills">
     <span class="pill gray" id="pDisc">Time to first click: —</span>
     <span class="pill gray" id="pMode">Walk · 10 min</span>
@@ -145,18 +176,12 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
     <div class="rlbl" id="rLbl">Walk · 10 min</div>
     <div class="note" id="iNote">Set a location to generate isochrone</div>
 
-    <div class="lbl">Search building</div>
-    <div class="row">
-      <input id="bldgSearch" class="search" type="text" list="bldgList" placeholder="e.g., Irving K. Barber Library">
-      <button class="btn btn-clear" id="btnClearSearch" title="Clear">✕</button>
-    </div>
-    <datalist id="bldgList"></datalist>
-
     <div class="fgroups">
       <div class="fgroup">
         <span class="fglbl">Events</span>
-        <span class="ftag" data-f="ubc">🎓 UBC Workshops</span>
-                <span class="ftag" data-f="event">📅 Local</span>
+        <span class="ftag" data-f="tm">🎟 Ticketmaster</span>
+        <span class="ftag" data-f="ubc">🎓 UBC</span>
+        <span class="ftag" data-f="event">📅 Local</span>
       </div>
       <div class="fgroup">
         <span class="fglbl">When</span>
@@ -177,17 +202,14 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
     </div>
     
     <div class="row" style="margin-top:9px">
-      <button class="btn btn-places" id="btnPlaces">🗺 Places layer: Off</button>
-    </div>
-<div class="row" style="margin-top:9px">
-      <button class="btn btn-far" id="btnFar">➕ Show farther events</button>
+      <button class="btn btn-places" id="btnPlaces">🗺 Explore nearby places</button>
     </div>
   </div>
   <div class="list" id="list">
     <div class="ibox">Set a location to discover what's happening around you.</div>
   </div>
   <div class="det" id="det"></div>
-  <div class="foot">Events: <b>Local</b> + <b>UBC</b> · Data: <b>Vancouver Open Data</b> · Isochrone: <b>OpenRouteService</b></div>
+  <div class="foot">Events: <b>Ticketmaster</b> · <b>UBC</b> · <b>Local</b> · Places: <b>Vancouver Open Data</b></div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -195,6 +217,7 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
 window.addEventListener('load', function() {
 
 var ORS_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjM4ZTUxNDliYzMxYTRjY2Y4NjczMjZlNzAwMTkxNjVkIiwiaCI6Im11cm11cjY0In0=';
+var TM_KEY  = '5psVumPe4Gl6t8ZVKajG2vGd8XSiQo70';
 
 // ── Map ───────────────────────────────────────────────────────────────────────
 var map = L.map('map').setView([49.2827,-123.1207],13);
@@ -277,7 +300,7 @@ function panToBuildingIfKnown(name){
 // ── State ─────────────────────────────────────────────────────────────────────
 var userMk=null, isoLayer=null, isoPoly=null;
 var tMode='foot-walking', mins=10, showFar=false;
-var eventFilters = new Set(['ubc']);
+var eventFilters = new Set(['ubc','tm','event']);
 var amenityFilters = new Set();
 var showAmenities = false;
 var timeWindow = null; // null=any, 'future', '24h', '3d', '7d', 'month', 'past30'
@@ -378,6 +401,20 @@ function nearestPointOnRing(fromLat, fromLng, ring){
 var isoBusy=false, firstListAt=null, firstDiscDone=false;
 var SPD = {'foot-walking':80,'cycling-regular':250};
 
+
+// ── Welcome modal ─────────────────────────────────────────────────────────────
+(function(){
+  var overlay = document.getElementById('welcomeOverlay');
+  var btn = document.getElementById('btnStart');
+  if (btn) btn.addEventListener('click', function(){
+    if (overlay) overlay.style.display = 'none';
+  });
+  // Also close on overlay click outside modal
+  if (overlay) overlay.addEventListener('click', function(e){
+    if (e.target === overlay) overlay.style.display = 'none';
+  });
+})();
+
 // ── Wire buttons ──────────────────────────────────────────────────────────────
 document.getElementById('btnLoc').addEventListener('click', getUserLocation);
 document.getElementById('btnDemo').addEventListener('click', setDemo);
@@ -433,8 +470,8 @@ function syncFilterUI(){
 function togglePlaces(on){
   showAmenities = !!on;
   var b = document.getElementById('btnPlaces');
-  if (showAmenities) { b.classList.add('on'); b.textContent = '🗺 Places layer: On'; }
-  else { b.classList.remove('on'); b.textContent = '🗺 Places layer: Off'; }
+  if (showAmenities) { b.classList.add('on'); b.textContent = '🗺 Exploring nearby places'; }
+  else { b.classList.remove('on'); b.textContent = '🗺 Explore nearby places'; }
   // When turning on with no amenity filters, default to parks + centres (nice demo baseline)
   if (showAmenities && amenityFilters.size === 0) { amenityFilters.add('park'); amenityFilters.add('cc'); }
   // When turning off, hide selection if it was a place
@@ -481,6 +518,61 @@ document.querySelectorAll('.ttag').forEach(function(el){
     render();
   });
 });
+
+// ── Ticketmaster Discovery API ────────────────────────────────────────────────
+function loadTicketmaster(done) {
+  var url = 'https://app.ticketmaster.com/discovery/v2/events.json'
+    + '?apikey=' + TM_KEY
+    + '&city=Vancouver&countryCode=CA&size=50&sort=date,asc&includeTest=no';
+  fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var events = (d._embedded && d._embedded.events) || [];
+      events.forEach(function(e){
+        var venue = e._embedded && e._embedded.venues && e._embedded.venues[0];
+        if (!venue) return;
+        var lat = venue.location && parseFloat(venue.location.latitude);
+        var lng = venue.location && parseFloat(venue.location.longitude);
+        if (!lat || !lng || isNaN(lat) || isNaN(lng)) return;
+        var img = null;
+        if (e.images && e.images.length) {
+          var sorted = e.images.slice().sort(function(a,b){ return (b.width||0)-(a.width||0); });
+          var pref = sorted.filter(function(i){ return i.ratio==='16_9'; });
+          img = (pref[0] || sorted[0]).url;
+        }
+        var price = '';
+        if (e.priceRanges && e.priceRanges[0]) {
+          var pr = e.priceRanges[0];
+          price = pr.min===pr.max ? '$'+pr.min : '$'+pr.min+'–$'+pr.max;
+        }
+        var ds = e.dates && e.dates.start;
+        var dateStr = ds ? (ds.localDate||'')+(ds.localTime?' · '+ds.localTime.slice(0,5):'') : '';
+        var eventDateMs = null;
+        if (ds && ds.localDate) {
+          var dtStr = ds.localDate+(ds.localTime?'T'+ds.localTime:'T00:00:00');
+          eventDateMs = new Date(dtStr).getTime();
+        }
+        var genre = '';
+        if (e.classifications && e.classifications[0]) {
+          var cl = e.classifications[0];
+          genre = [cl.segment&&cl.segment.name, cl.genre&&cl.genre.name]
+            .filter(function(x){ return x && x!=='Undefined'; }).join(' · ');
+        }
+        items.push({
+          id:'tm-'+e.id, title:e.name,
+          desc:(venue.name||'')+(venue.city?' · '+venue.city.name:''),
+          timeText:dateStr, lat:lat, lng:lng, interest:'high', filt:'tm',
+          img:img, eventDateMs:eventDateMs,
+          detail:{
+            venue:venue.name||'',
+            address:[venue.address&&venue.address.line1, venue.city&&venue.city.name].filter(Boolean).join(', '),
+            date:dateStr, genre:genre, price:price, url:e.url||''
+          }
+        });
+      });
+      done();
+    }).catch(function(err){ console.warn('TM error:',err); done(); });
+}
 
 // ── Eventbrite seed (local events) ───────────────────────────────────────────
 var ebSeed = [
@@ -1091,7 +1183,7 @@ function loadODS(ds,limit,mapFn,done){
     }).catch(function(){done();});
 }
 function loadVan(done){
-  var pending=5;
+  var pending=7;
   function tick(){if(--pending===0) done();}
 
   loadODS('parks',300,function(f,pt){
@@ -1149,10 +1241,40 @@ function loadVan(done){
       lat:pt.lat,lng:pt.lng,interest:'high',filt:'cc',img:null,
       detail:{venue:p.name,address:p.address||'',date:'',genre:'',price:'Varies',url:'https://vancouver.ca/parks-recreation-culture/community-centres.aspx'}};
   },tick);
+  // Restaurants (business licences filtered to food/beverage)
+  fetch('https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/business-licences/exports/geojson?limit=200&where=businesstype%3D%27Restaurant%27')
+    .then(function(r){return r.json();})
+    .then(function(gj){
+      (gj.features||[]).forEach(function(f){
+        var pt=coordsOf(f); if(!pt||isNaN(pt.lat)||isNaN(pt.lng)) return;
+        var p=f.properties;
+        items.push({id:'rest'+Math.random(),title:p.businesstradename||p.businessname||'Restaurant',
+          desc:(p.localarea||'')+(p.businesssubtype?' · '+p.businesssubtype:''),
+          timeText:'',lat:pt.lat,lng:pt.lng,interest:'medium',filt:'restaurant',img:null,
+          detail:{venue:p.businesstradename||p.businessname,address:p.address||'',date:'',genre:p.businesssubtype||'Restaurant',price:'',
+          url:'https://opendata.vancouver.ca/explore/dataset/business-licences'}});
+      }); tick();
+    }).catch(function(){tick();});
+
+  // Beaches
+  fetch('https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/beaches/exports/geojson?limit=50')
+    .then(function(r){return r.json();})
+    .then(function(gj){
+      (gj.features||[]).forEach(function(f){
+        var pt=coordsOf(f); if(!pt||isNaN(pt.lat)||isNaN(pt.lng)) return;
+        var p=f.properties;
+        items.push({id:'bch'+Math.random(),title:p.name||'Beach',
+          desc:p.facilities||'',timeText:'Free · Open access',
+          lat:pt.lat,lng:pt.lng,interest:'high',filt:'beach',img:null,
+          detail:{venue:p.name,address:p.address||'',date:'',genre:'Beach',price:'Free',
+          url:'https://vancouver.ca/parks-recreation-culture/beaches.aspx'}});
+      }); tick();
+    }).catch(function(){tick();});
 }
 
+
 // ── Markers ───────────────────────────────────────────────────────────────────
-var COLS={event:'#1a73e8',park:'#166534',art:'#7e22ce',permit:'#c2410c',cc:'#0369a1',ubc:'#002145'};
+var COLS={tm:'#e8472a',event:'#1a73e8',park:'#166534',art:'#7e22ce',permit:'#c2410c',cc:'#0369a1',ubc:'#002145',restaurant:'#d97706',beach:'#0891b2',sport:'#16a34a'};
 function makePinIcon(color, scale){
   var s = scale || 1;
   var w = 28*s, h = 40*s;
@@ -1412,12 +1534,16 @@ map.on('click',function(e){setLoc(e.latlng.lat,e.latlng.lng,false);});
 
 // ── Render ────────────────────────────────────────────────────────────────────
 var TTAG={
-  event: '<span class="tg te">📅 Local Event</span>',
-  park:  '<span class="tg tp">🌳 Park</span>',
-  art:   '<span class="tg ta">🎨 Public Art</span>',
-  permit:'<span class="tg tx">🏗 Permit</span>',
-  cc:    '<span class="tg tc">🏢 Centre</span>',
-  ubc:   '<span class="tg tu">🎓 UBC</span>'
+  tm:         '<span class="tg tr">🎟 Ticketmaster</span>',
+  event:      '<span class="tg te">📅 Local Event</span>',
+  park:       '<span class="tg tp">🌳 Park</span>',
+  art:        '<span class="tg ta">🎨 Public Art</span>',
+  permit:     '<span class="tg tx">🏗 Permit</span>',
+  cc:         '<span class="tg tc">🏢 Centre</span>',
+  ubc:        '<span class="tg tu">🎓 UBC</span>',
+  restaurant: '<span class="tg trest">🍽 Restaurant</span>',
+  beach:      '<span class="tg tbeach">🏖 Beach</span>',
+  sport:      '<span class="tg tsport">🏀 Sport</span>'
 };
 
 function render(){
@@ -1426,8 +1552,8 @@ function render(){
   var fallR=mins*SPD[tMode];
 
   // --- Partition items: events vs places ---
-  var eventsBase = items.filter(function(it){ return it.filt==='event' || it.filt==='ubc'; });
-  var placesBase = items.filter(function(it){ return it.filt!=='event' && it.filt!=='ubc'; });
+  var eventsBase = items.filter(function(it){ return it.filt==='event'||it.filt==='ubc'||it.filt==='tm'; });
+  var placesBase = items.filter(function(it){ return it.filt!=='event'&&it.filt!=='ubc'&&it.filt!=='tm'; });
 
   // Apply event source filters
   var eventsPool = eventsBase.filter(function(it){ return eventFilters.has(it.filt); });
@@ -1537,11 +1663,23 @@ function render(){
   var el=document.getElementById('list');
   el.innerHTML='';
 
+  // Auto-fallback: show places when events are sparse (< 3)
+  var autoPlaces = (nearEvAll.length < 3) && !showAmenities;
+  if (autoPlaces) {
+    // enable parks + restaurants + beaches as fallback silently
+    var fallbackFilts = new Set(['park','restaurant','beach','cc','art','sport']);
+    var fallbackPl = plEnr.filter(function(e){ return e.inRange && fallbackFilts.has(e.filt); }).slice(0,8);
+    var hasFallback = fallbackPl.length > 0;
+  } else {
+    var fallbackPl = [];
+    var hasFallback = false;
+  }
+
   // Events section
   el.appendChild(shdr('Events', (timeWindow==='future'?'upcoming · ':'') + 'within search area · showing ' + nearEv.length + ' of ' + nearEvAll.length));
   if(nearEv.length===0){
-    el.innerHTML += '<div class="empty"><b>No events in range</b><br>'
-      + (timeWindow ? 'Try a wider time window or clear the time filter.' : 'Try increasing time, switching mode, or changing location.')
+    el.innerHTML += '<div class="empty"><b>No events nearby right now</b><br>'
+      + (timeWindow ? 'Try a wider time window or clear the time filter.' : 'Try increasing your travel time or switching to bike mode.')
       + '</div>';
   } else {
     nearEv.forEach(function(e){ el.appendChild(mkCard(e,false)); });
@@ -1563,6 +1701,15 @@ function render(){
     } else {
       farEv.forEach(function(e){ el.appendChild(mkCard(e,true)); });
     }
+  }
+
+  // Auto fallback POI section (when events are sparse)
+  if (autoPlaces && hasFallback) {
+    var fb = document.createElement('div');
+    fb.className = 'fallback-banner';
+    fb.innerHTML = '✨ <b>Not much on right now</b> — here's what's around you to explore';
+    el.appendChild(fb);
+    fallbackPl.forEach(function(e){ el.appendChild(mkCard(e,false)); });
   }
 
   // Places section (toggleable)
@@ -1718,7 +1865,7 @@ function renderDet(e){
   var actHtml='<div class="dact">'
     +(gm?'<a href="'+gm+'" target="_blank"><button class="btn primary">🧭 Directions</button></a>':'<button class="btn primary" disabled style="opacity:.55;cursor:not-allowed;">🧭 Directions</button>');
   if(d.url && e.filt==='tm')
-    actHtml+='<a href="'+esc(d.url)+'" target="_blank"><button class="btn tm-btn">🎟 Get Tickets</button></a>';
+    actHtml+='<a href="'+esc(d.url)+'" target="_blank"><button class="btn" style="background:#e8472a;color:#fff;border-color:#e8472a">🎟 Get Tickets</button></a>';
   else if(d.url)
     actHtml+='<a href="'+esc(d.url)+'" target="_blank"><button class="btn">🔗 Source</button></a>';
   actHtml+='<button class="btn" id="btnClose">✕</button></div>';
@@ -1742,16 +1889,18 @@ function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'
 pill('pData','Loading…','warn');
 syncFilterUI();
 resetDiscovery();
-var pending=5;
+var pending=6;
 function onLoaded(){
   if(--pending===0){
     buildMk();
+    var nTM=items.filter(function(i){return i.filt==='tm';}).length;
     var nU=items.filter(function(i){return i.filt==='ubc';}).length;
     var nL=items.filter(function(i){return i.filt==='event';}).length;
-    pill('pData',items.length+' items ('+nU+' UBC, '+nL+' local)','ok');
+    pill('pData',items.length+' items · '+nTM+' TM · '+nU+' UBC · '+nL+' local','ok');
     setDemo();
   }
 }
+loadTicketmaster(onLoaded);
 loadUBCBuildings().then(onLoaded).catch(onLoaded);
 loadEB(onLoaded);
 loadVan(onLoaded);
