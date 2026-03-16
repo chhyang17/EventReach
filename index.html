@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>EventReach · Vancouver v27</title>
+<title>EventReach · Vancouver</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -116,13 +116,33 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
 }
 .search:focus{border-color:#9bb7d6; box-shadow:0 0 0 3px rgba(60,130,220,0.12);}
 .btn-clear{width:42px; padding:10px 0; text-align:center;}
-
+/* Welcome modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center}
+.modal-box{background:#fff;border-radius:18px;padding:28px 24px;max-width:340px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.25);text-align:center}
+.modal-box h2{font-size:24px;font-weight:800;color:#1a73e8;margin-bottom:8px}
+.modal-tagline{font-size:13px;color:#475569;margin-bottom:18px;line-height:1.5}
+.modal-steps{text-align:left;background:#f8fafc;border-radius:10px;padding:12px 14px;margin-bottom:18px;display:flex;flex-direction:column;gap:10px}
+.modal-step{font-size:13px;color:#334155;display:flex;align-items:flex-start;gap:10px;line-height:1.4}
+.btn-start{width:100%;padding:12px;background:#1a73e8;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-start:hover{background:#155cc0}
 </style>
 </head>
 <body>
+<div class="modal-overlay" id="welcomeOverlay">
+  <div class="modal-box">
+    <h2>EventReach</h2>
+    <p class="modal-tagline">Discover events and places you can actually reach — based on where you are right now.</p>
+    <div class="modal-steps">
+      <div class="modal-step"><span>📍</span><div>Tap <b>My location</b> or click anywhere on the map to set your starting point</div></div>
+      <div class="modal-step"><span>🕐</span><div>Set your <b>travel time</b> — the map shows what's reachable within that range</div></div>
+      <div class="modal-step"><span>🎯</span><div>Browse <b>events nearby</b>, or explore places when nothing's on</div></div>
+    </div>
+    <button class="btn-start" id="btnStart">Get started →</button>
+  </div>
+</div>
 <div id="map"></div>
 <div class="sidebar">
-  <div class="hdr">EventReach · Vancouver <span>v27</span></div>
+  <div class="hdr">EventReach · Vancouver <span>v0.1</span></div>
   <div class="pills">
     <span class="pill gray" id="pDisc">Time to first click: —</span>
     <span class="pill gray" id="pMode">Walk · 10 min</span>
@@ -200,7 +220,7 @@ var TM_KEY  = '5psVumPe4Gl6t8ZVKajG2vGd8XSiQo70';
 
 // ── Map ───────────────────────────────────────────────────────────────────────
 var map = L.map('map').setView([49.2827,-123.1207],13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap contributors © CARTO',subdomains:'abcd',maxZoom:19}).addTo(map);
 var mkLayer = L.layerGroup().addTo(map);
 
 
@@ -379,6 +399,12 @@ function nearestPointOnRing(fromLat, fromLng, ring){
 }
 var isoBusy=false, firstListAt=null, firstDiscDone=false;
 var SPD = {'foot-walking':80,'cycling-regular':250};
+
+// ── Welcome modal ─────────────────────────────────────────────────────────────
+var btnStart = document.getElementById('btnStart');
+var welcomeOverlay = document.getElementById('welcomeOverlay');
+if (btnStart) btnStart.addEventListener('click', function(){ welcomeOverlay.style.display='none'; });
+if (welcomeOverlay) welcomeOverlay.addEventListener('click', function(e){ if(e.target===welcomeOverlay) welcomeOverlay.style.display='none'; });
 
 // ── Wire buttons ──────────────────────────────────────────────────────────────
 document.getElementById('btnLoc').addEventListener('click', getUserLocation);
@@ -1819,7 +1845,7 @@ function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'
 pill('pData','Loading…','warn');
 syncFilterUI();
 resetDiscovery();
-var pending=6;
+var pending=5;
 function onLoaded(){
   if(--pending===0){
     buildMk();
