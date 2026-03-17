@@ -1601,6 +1601,15 @@ function render(){
   var nearEvAll = evEnr.filter(function(e){return e.inRange;});
   var nearEv = nearEvAll.slice(0, evListLimit);
 
+  // Auto-surface places when no events in range
+  if (nearEvAll.length === 0 && !showAmenities) {
+    showAmenities = true;
+    if (amenityFilters.size === 0) { amenityFilters.add('park'); amenityFilters.add('cc'); }
+    var b = document.getElementById('btnPlaces');
+    if (b) { b.classList.add('on'); b.textContent = '🗺 Places layer: On'; }
+    syncFilterUI();
+  }
+
   // Farther-but-worth-it: only events
   var farEv = showFar
     ? evEnr.filter(function(e){return !e.inRange && e.interest==='high' && e.dist<=fallR*3;}).slice(0,4)
@@ -1650,9 +1659,10 @@ function render(){
   // Events section
   el.appendChild(shdr('Events', (timeWindow==='future'?'upcoming · ':'') + 'within search area · showing ' + nearEv.length + ' of ' + nearEvAll.length));
   if(nearEv.length===0){
-    el.innerHTML += '<div class="empty"><b>No events in range</b><br>'
-      + (timeWindow ? 'Try a wider time window or clear the time filter.' : 'Try increasing time, switching mode, or changing location.')
-      + '</div>';
+    var emptyMsg = timeWindow
+      ? 'No events match the current time filter. Showing nearby places instead.'
+      : 'No events in range right now — showing nearby parks and community centres instead.';
+    el.innerHTML += '<div class="empty"><b>No events in range</b><br>' + emptyMsg + '</div>';
   } else {
     nearEv.forEach(function(e){ el.appendChild(mkCard(e,false)); });
     if (nearEvAll.length > nearEv.length) {
