@@ -696,9 +696,30 @@ setTimeout(() => {
 
   // Sign out
   document.getElementById('btnDoLogout')?.addEventListener('click', async () => {
-    if (CONFIGURED && auth) await signOut(auth);
-    else { window.acctState = null; window.updateAcctButton?.(); window.updateProfilePanel?.(); window.closeAcctModal?.(); }
+    if (CONFIGURED && auth) {
+      await signOut(auth);
+    } else {
+      window.acctState = null;
+      window.savedIds = new Set();
+      window.rsvpIds  = new Set();
+      window.updateAcctButton?.();
+      window.updateProfilePanel?.();
+      window.closeAcctModal?.();
+    }
   });
+
+  // Expose Firebase signOut so legacy doLogout() can call it
+  window._fbSignOut = async function() {
+    if (CONFIGURED && auth) await signOut(auth);
+    else {
+      window.acctState = null;
+      window.savedIds = new Set();
+      window.rsvpIds  = new Set();
+      window.updateAcctButton?.();
+      window.updateProfilePanel?.();
+      window.closeAcctModal?.();
+    }
+  };
 
   // Interest tags in register form
   document.querySelectorAll('#regInterests .ftag').forEach(tag => {
@@ -818,7 +839,7 @@ function switchChatRoom(roomId, roomLabel, roomSub) {
   if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
 
   if (!CONFIGURED || !rtdb) {
-    if (msgsEl) msgsEl.innerHTML = '<div style="text-align:center;font-size:12px;color:#94a3b8;padding:20px">💡 Connect Firebase to enable live chat.<br>See code comments for setup instructions.</div>';
+    if (msgsEl) msgsEl.innerHTML = '<div style="text-align:center;font-size:12px;color:#94a3b8;padding:24px 16px;line-height:1.6">💬 <b style="display:block;color:#334155;margin-bottom:4px">Chat is ready</b>To activate live chat, complete the Firebase Realtime Database setup in the console, then make sure your <code>databaseURL</code> is set in the config.</div>';
     return;
   }
 
@@ -884,6 +905,11 @@ window.openEventChat = function(eventId, eventTitle) {
 
 // Group chat button
 document.getElementById('btnOpenGroupChat')?.addEventListener('click', () => {
+  var state = window.acctState || (typeof acctState !== 'undefined' ? acctState : null);
+  if (!state) {
+    window.openAcctModal?.();
+    return;
+  }
   openChatModal('downtown', '🏙 Downtown', 'General Vancouver chat');
 });
 document.getElementById('chatClose')?.addEventListener('click', () => {
@@ -2713,15 +2739,20 @@ function updateProfilePanel(){
   var auth = document.getElementById('acctAuth');
   var prof = document.getElementById('acctProfile');
   if(!auth||!prof) return;
-  if(acctState){
+  var state = window.acctState || acctState;
+  if(state){
     auth.style.display = 'none';
     prof.classList.add('on');
-    document.getElementById('acctAvatarLbl').textContent = acctState.name.charAt(0).toUpperCase();
-    document.getElementById('acctNameLbl').textContent = acctState.name;
-    document.getElementById('acctEmailLbl').textContent = acctState.email;
-    document.getElementById('statSaved').textContent = savedIds.size;
-    document.getElementById('statRsvp').textContent = rsvpIds.size;
-    document.getElementById('statCreated').textContent = userEvents.length;
+    var name = state.name || '';
+    document.getElementById('acctAvatarLbl').textContent = name.charAt(0).toUpperCase() || '?';
+    document.getElementById('acctNameLbl').textContent = name;
+    document.getElementById('acctEmailLbl').textContent = state.email || '';
+    var saved = window.savedIds || savedIds || new Set();
+    var rsvp  = window.rsvpIds  || rsvpIds  || new Set();
+    var mine  = (window.userEvents || userEvents || []);
+    document.getElementById('statSaved').textContent   = saved.size;
+    document.getElementById('statRsvp').textContent    = rsvp.size;
+    document.getElementById('statCreated').textContent = mine.length;
     renderProfTab(window._profTab || 'saved');
   } else {
     auth.style.display = '';
@@ -2741,10 +2772,13 @@ function switchProfTab(tab){
 function renderProfTab(tab){
   var el = document.getElementById('profEventList');
   if(!el) return;
-  var ids = tab==='saved' ? savedIds : tab==='rsvp' ? rsvpIds : null;
+  // Always read from window scope — Firebase syncs into window.savedIds / window.rsvpIds
+  var savedSet = window.savedIds || savedIds || new Set();
+  var rsvpSet  = window.rsvpIds  || rsvpIds  || new Set();
+  var ids = tab==='saved' ? savedSet : tab==='rsvp' ? rsvpSet : null;
   var evList = [];
   if(tab==='mine'){
-    evList = userEvents || [];
+    evList = (window.userEvents || userEvents) || [];
   } else {
     ids.forEach(function(id){
       var ev = (typeof items !== 'undefined') ? items.find(function(x){return x.id===id;}) : null;
@@ -2752,17 +2786,22 @@ function renderProfTab(tab){
     });
   }
   if(!evList.length){
-    el.innerHTML = '<div style="font-size:12px;color:#94a3b8;text-align:center;padding:12px">Nothing here yet</div>';
+    var emptyMsg = tab==='saved' ? 'Star an event to save it here'
+                 : tab==='rsvp'  ? 'RSVP to an event to see it here'
+                 : 'Events you create will appear here';
+    el.innerHTML = '<div style="font-size:12px;color:#94a3b8;text-align:center;padding:16px 8px">'+emptyMsg+'</div>';
     return;
   }
   el.innerHTML = evList.map(function(ev){
     var badge = tab==='saved' ? '⭐' : tab==='rsvp' ? '✅' : '📌';
-    return '<div onclick="window.closeAcctModal&&closeAcctModal();window.selId=\''+ev.id+'\';if(typeof render===\'function\')render();" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;cursor:pointer;transition:background .12s" onmouseover="this.style.background=\'#f1f5f9\'" onmouseout="this.style.background=\'#f8fafc\'">'
+    return '<div onclick="closeAcctModal();window.selId=\''+ev.id+'\';if(typeof render===\'function\')render();" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;cursor:pointer;transition:background .12s" onmouseover="this.style.background=\'#f1f5f9\'" onmouseout="this.style.background=\'#f8fafc\'">'
       +'<span style="font-size:14px;flex-shrink:0">'+badge+'</span>'
-      +'<div style="min-width:0">'
+      +'<div style="min-width:0;flex:1">'
       +'<div style="font-size:12px;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(ev.title)+'</div>'
-      +'<div style="font-size:10px;color:#94a3b8;margin-top:1px">'+esc(ev.timeText||ev.desc||'')+'</div>'
-      +'</div></div>';
+      +'<div style="font-size:10px;color:#94a3b8;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(ev.timeText||ev.desc||'')+'</div>'
+      +'</div>'
+      +'<span style="font-size:10px;color:#94a3b8;flex-shrink:0">→</span>'
+      +'</div>';
   }).join('');
 }
 window.switchProfTab = switchProfTab;
@@ -2805,7 +2844,14 @@ function doRegister(){
   updateProfilePanel();
 }
 function doLogout(){
+  // Call Firebase signOut if available, otherwise fall back to local clear
+  if(typeof firebase !== 'undefined' || window._fbSignOut){
+    if(window._fbSignOut) { window._fbSignOut(); return; }
+  }
   acctState = null;
+  window.acctState = null;
+  window.savedIds = new Set();
+  window.rsvpIds  = new Set();
   saveAcctState();
   updateAcctButton();
   updateProfilePanel();
