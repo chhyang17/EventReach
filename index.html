@@ -1754,12 +1754,6 @@ function render(){
   }
 
 
-// Apply places toggle + filters
-  var placesPool = [];
-  if (effectiveShowAmenities && amenityFilters.size > 0) {
-    placesPool = placesBase.filter(function(it){ return amenityFilters.has(it.filt); });
-  }
-
   function enrich(it){
     var useLat = (it.lat!=null)?it.lat:UBC_POINT.lat;
     var useLng = (it.lng!=null)?it.lng:UBC_POINT.lng;
@@ -1777,17 +1771,12 @@ function render(){
   var evEnr = eventsPool
     .map(enrich).sort(function(a,b){return a.dist-b.dist;});
 
-  var plEnr = placesPool.filter(function(it){return isFinite(it.lat)&&isFinite(it.lng);})
-    .map(enrich).sort(function(a,b){return a.dist-b.dist;});
-
-  // Events: within range (paginated in list)
+  // Events: within range (paginated in list) — computed FIRST so auto-surface can react
   var nearEvAll = evEnr.filter(function(e){return e.inRange;});
   var nearEv = nearEvAll.slice(0, evListLimit);
 
   // ── Issue #5: Auto-surface places only when no events in range ────────────
-  // We use a local flag so we don't permanently flip showAmenities for the user.
   var autoShowPlaces = (nearEvAll.length === 0);
-  // If user has explicitly turned places layer on, respect that too.
   var effectiveShowAmenities = showAmenities || autoShowPlaces;
   // Auto-set default amenity filters only when auto-triggering (don't override user choices)
   if (autoShowPlaces && amenityFilters.size === 0) {
@@ -1804,6 +1793,15 @@ function render(){
     else if (autoShowPlaces) { bPlaces.classList.remove('on'); bPlaces.textContent = '🗺 Auto-showing places'; }
     else { bPlaces.classList.remove('on'); bPlaces.textContent = '🗺 Places layer: Off'; }
   }
+
+  // Now placesPool uses effectiveShowAmenities which is correctly defined
+  var placesPool = [];
+  if (effectiveShowAmenities && amenityFilters.size > 0) {
+    placesPool = placesBase.filter(function(it){ return amenityFilters.has(it.filt); });
+  }
+
+  var plEnr = placesPool.filter(function(it){return isFinite(it.lat)&&isFinite(it.lng);})
+    .map(enrich).sort(function(a,b){return a.dist-b.dist;});
 
   // Farther-but-worth-it: only events
   var farEv = showFar
@@ -2064,11 +2062,29 @@ resetDiscovery();
 var pending=5;
 function onLoaded(){
   if(--pending===0){
+    // Re-inject any user-created events saved in localStorage
+    try {
+      var saved = JSON.parse(localStorage.getItem('er_myevents')||'[]');
+      saved.forEach(function(ev){
+        if(!ev||!ev.id) return;
+        // avoid duplicates if somehow already in items
+        if(!items.find(function(x){return x.id===ev.id;})) {
+          items.push(ev);
+        }
+      });
+      // sync userEvents variable to match what's in localStorage
+      userEvents = saved;
+    } catch(_e){}
+
     buildMk();
     var nTM=items.filter(function(i){return i.filt==='tm';}).length;
     var nU=items.filter(function(i){return i.filt==='ubc';}).length;
     var nL=items.filter(function(i){return i.filt==='event';}).length;
-    pill('pData',items.length+' items ('+nTM+' TM, '+nU+' UBC, '+nL+' local)','ok');
+    var nUser=items.filter(function(i){return i.createdBy;}).length;
+    var dataLbl = items.length+' items ('+nTM+' TM, '+nU+' UBC, '+nL+' local';
+    if(nUser) dataLbl += ', '+nUser+' yours';
+    dataLbl += ')';
+    pill('pData', dataLbl, 'ok');
     setDemo();
   }
 }
@@ -2329,10 +2345,29 @@ function submitCreateEvent(){
   closeCreateModal();
 
   if(!isFinite(lat)||!isFinite(lng)){
-    // Ask user to click map for placement
-    pendingPlacement = newEv;
-    note('📍 Click on the map to place your new event: "'+title+'"');
-    pill('pIso','Awaiting pin placement…','warn');
+    if(venue){
+      // Try to geocode the venue address first
+      note('🔍 Looking up address for "'+venue+'"…');
+      geocode(venue+', Vancouver BC', function(pt){
+        if(pt){
+          newEv.lat = pt.lat; newEv.lng = pt.lng;
+          saveAcctState(); // persist coordinates
+          upsertMarker(newEv);
+          buildMk();
+          render();
+          note('✅ Event "'+title+'" placed at '+venue);
+        } else {
+          // Fallback: ask user to click map
+          pendingPlacement = newEv;
+          note('📍 Couldn\'t find address — click the map to place "'+title+'"');
+          pill('pIso','Awaiting pin placement…','warn');
+        }
+      });
+    } else {
+      pendingPlacement = newEv;
+      note('📍 Click on the map to place your new event: "'+title+'"');
+      pill('pIso','Awaiting pin placement…','warn');
+    }
   } else {
     upsertMarker(newEv);
     buildMk();
@@ -2351,6 +2386,7 @@ map.on('click', function(e){
   if(pendingPlacement){
     pendingPlacement.lat = e.latlng.lat;
     pendingPlacement.lng = e.latlng.lng;
+    saveAcctState(); // persist coordinates so they survive refresh
     upsertMarker(pendingPlacement);
     buildMk();
     render();
