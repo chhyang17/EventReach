@@ -127,6 +127,111 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
 .modal-step{font-size:13px;color:#334155;display:flex;align-items:flex-start;gap:10px;line-height:1.4}
 .btn-start{width:100%;padding:12px;background:#1a73e8;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
 .btn-start:hover{background:#155cc0}
+
+/* ── Account button in header ── */
+.btn-acct{margin-left:auto;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer;font-family:inherit;transition:background .15s}
+.btn-acct:hover{background:rgba(255,255,255,.3)}
+.hdr{display:flex;align-items:center}
+.hdr span{font-size:12px;font-weight:400;opacity:.8;margin-left:8px;margin-right:auto}
+
+/* ── Account modal ── */
+.acct-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:none;align-items:center;justify-content:center}
+.acct-modal.on{display:flex}
+.acct-box{background:#fff;border-radius:18px;padding:24px 22px;max-width:360px;width:92%;box-shadow:0 8px 40px rgba(0,0,0,.22)}
+.acct-box h3{font-size:18px;font-weight:800;color:#1e293b;margin-bottom:4px}
+.acct-sub{font-size:12px;color:#94a3b8;margin-bottom:16px}
+.acct-tabs{display:flex;gap:4px;margin-bottom:16px;background:#f1f5f9;border-radius:10px;padding:3px}
+.acct-tab{flex:1;text-align:center;padding:7px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:#64748b;transition:all .15s;-webkit-user-select:none;user-select:none}
+.acct-tab.on{background:#fff;color:#1a73e8;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.acct-field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px}
+.acct-field label{font-size:11px;font-weight:700;color:#475569}
+.acct-field input{padding:9px 11px;border:1px solid #dde5ee;border-radius:9px;font-size:14px;outline:none;font-family:inherit}
+.acct-field input:focus{border-color:#9bb7d6;box-shadow:0 0 0 3px rgba(60,130,220,.1)}
+.btn-acct-submit{width:100%;padding:11px;background:#1a73e8;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px}
+.btn-acct-submit:hover{background:#155cc0}
+.acct-note{font-size:11px;color:#94a3b8;text-align:center;margin-top:10px;line-height:1.5}
+.acct-close{float:right;background:none;border:none;font-size:18px;cursor:pointer;color:#94a3b8;line-height:1;padding:0 2px}
+.acct-profile{display:none;flex-direction:column;gap:10px}
+.acct-profile.on{display:flex}
+.acct-avatar{width:48px;height:48px;background:#1a73e8;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700;margin:0 auto 4px}
+.acct-name-lbl{text-align:center;font-size:15px;font-weight:700;color:#1e293b}
+.acct-email-lbl{text-align:center;font-size:12px;color:#94a3b8;margin-top:-6px}
+.acct-stats{display:flex;gap:8px;justify-content:center;margin:6px 0}
+.acct-stat{background:#f1f5f9;border-radius:10px;padding:8px 14px;text-align:center;flex:1}
+.acct-stat b{display:block;font-size:17px;font-weight:800;color:#1a73e8}
+.acct-stat span{font-size:10px;color:#64748b}
+.btn-acct-logout{width:100%;padding:9px;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-acct-logout:hover{background:#e2e8f0}
+.btn-create-event{width:100%;padding:10px;background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-create-event:hover{background:#bbf7d0}
+
+/* ── Create-event modal ── */
+.create-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9997;display:none;align-items:center;justify-content:center}
+.create-modal.on{display:flex}
+.create-box{background:#fff;border-radius:18px;padding:24px 22px;max-width:420px;width:94%;box-shadow:0 8px 40px rgba(0,0,0,.22);max-height:90vh;overflow-y:auto}
+.create-box h3{font-size:17px;font-weight:800;color:#1e293b;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.create-row{display:flex;gap:10px}
+.create-row .acct-field{flex:1}
+.create-map-hint{font-size:11px;color:#1a73e8;background:#eef2ff;border:1px solid #c5d5ff;border-radius:8px;padding:7px 10px;margin-bottom:11px;line-height:1.4}
+.btn-create-submit{width:100%;padding:11px;background:#166534;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+.btn-create-submit:hover{background:#14532d}
+
+/* ── Save / RSVP badges on cards and detail ── */
+.badge-save{cursor:pointer;font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid #fde68a;background:#fefce8;color:#854d0e;transition:all .15s;-webkit-user-select:none;user-select:none}
+.badge-save.on{background:#fbbf24;border-color:#f59e0b;color:#fff}
+.badge-rsvp{cursor:pointer;font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid #bbf7d0;background:#f0fdf4;color:#166534;transition:all .15s;-webkit-user-select:none;user-select:none}
+.badge-rsvp.on{background:#22c55e;border-color:#16a34a;color:#fff}
+
+/* ── Bike hill warning toast ── */
+.hill-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#7a4000;color:#fff;border-radius:10px;padding:9px 16px;font-size:12px;z-index:8000;display:none;text-align:center;line-height:1.4;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.hill-toast.on{display:block}
+
+/* ── Sidebar collapse (desktop) ── */
+.sidebar.collapsed .pills,
+.sidebar.collapsed .ctrl,
+.sidebar.collapsed .foot{ display:none !important }
+.sidebar.collapsed{ border-radius:14px }
+.btn-collapse{background:none;border:none;color:rgba(255,255,255,.85);font-size:14px;cursor:pointer;padding:2px 4px;line-height:1;margin-left:6px;transition:transform .2s}
+.sidebar.collapsed .btn-collapse{transform:rotate(180deg)}
+/* ── Rpanel collapse ── */
+.rpanel.collapsed .list,
+.rpanel.collapsed .det{ display:none !important }
+.rpanel.collapsed{ min-height:0 }
+.rpanel.collapsed #btnRpCollapse{ transform:rotate(180deg) }
+
+@media (max-width:640px){
+  .sidebar{
+    position:fixed;
+    top:auto;
+    bottom:0;
+    left:0;
+    right:0;
+    width:100%;
+    max-width:100%;
+    border-radius:18px 18px 0 0;
+    max-height:55vh;
+    z-index:1100;
+    transform:translateY(calc(100% - 52px));
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  .sidebar.open{transform:translateY(0)}
+  .hdr{cursor:pointer;border-radius:18px 18px 0 0;padding:14px 16px}
+  .hdr::before{content:'';display:block;width:36px;height:4px;background:rgba(255,255,255,.5);border-radius:2px;margin:0 auto 8px;flex:none;align-self:flex-start}
+  .rpanel{
+    position:fixed;
+    top:10px;
+    right:6px;
+    left:6px;
+    width:auto;
+    max-height:42vh;
+  }
+  .modal-box{max-width:95vw;padding:20px 16px}
+  .acct-box,.create-box{max-width:98vw;padding:18px 14px}
+  #map{height:100vh}
+}
+@media (min-width:641px){
+  .sidebar{max-height:96vh}
+}
 </style>
 </head>
 <body>
@@ -142,9 +247,88 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
     <button class="btn-start" id="btnStart">Get started →</button>
   </div>
 </div>
+
+<!-- Account modal -->
+<div class="acct-modal" id="acctModal">
+  <div class="acct-box">
+    <button class="acct-close" id="acctClose">✕</button>
+    <!-- Auth forms (shown when logged out) -->
+    <div id="acctAuth">
+      <h3>Welcome back</h3>
+      <p class="acct-sub">Sign in to save events, RSVP, and post your own.</p>
+      <div class="acct-tabs">
+        <div class="acct-tab on" id="tabLogin" onclick="switchTab('login')">Sign in</div>
+        <div class="acct-tab" id="tabReg" onclick="switchTab('reg')">Register</div>
+      </div>
+      <div id="formLogin">
+        <div class="acct-field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com"></div>
+        <div class="acct-field"><label>Password</label><input type="password" id="loginPw" placeholder="••••••••"></div>
+        <button class="btn-acct-submit" onclick="doLogin()">Sign in</button>
+      </div>
+      <div id="formReg" style="display:none">
+        <div class="acct-field"><label>Name</label><input type="text" id="regName" placeholder="Your name"></div>
+        <div class="acct-field"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com"></div>
+        <div class="acct-field"><label>Password</label><input type="password" id="regPw" placeholder="••••••••"></div>
+        <button class="btn-acct-submit" onclick="doRegister()">Create account</button>
+      </div>
+      <p class="acct-note">⚠️ Prototype mode — data stored locally in your browser only.</p>
+    </div>
+    <!-- Profile (shown when logged in) -->
+    <div class="acct-profile" id="acctProfile">
+      <div class="acct-avatar" id="acctAvatarLbl">?</div>
+      <div class="acct-name-lbl" id="acctNameLbl">—</div>
+      <div class="acct-email-lbl" id="acctEmailLbl">—</div>
+      <div class="acct-stats">
+        <div class="acct-stat"><b id="statSaved">0</b><span>Saved</span></div>
+        <div class="acct-stat"><b id="statRsvp">0</b><span>RSVPs</span></div>
+        <div class="acct-stat"><b id="statCreated">0</b><span>Created</span></div>
+      </div>
+      <button class="btn-create-event" onclick="openCreateModal()">➕ Create an event</button>
+      <button class="btn-acct-logout" onclick="doLogout()">Sign out</button>
+      <p class="acct-note">⚠️ Prototype mode — data stored locally in your browser only.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Create event modal -->
+<div class="create-modal" id="createModal">
+  <div class="create-box">
+    <h3>Create an event <button class="acct-close" onclick="closeCreateModal()">✕</button></h3>
+    <div class="create-map-hint">📍 After saving, click the map to place your event pin, or enter lat/lng manually.</div>
+    <div class="acct-field"><label>Event title *</label><input type="text" id="ceTitle" placeholder="e.g., Weekend Hike at Wreck Beach"></div>
+    <div class="acct-field"><label>Description</label><input type="text" id="ceDesc" placeholder="Short description…"></div>
+    <div class="create-row">
+      <div class="acct-field"><label>Date</label><input type="date" id="ceDate"></div>
+      <div class="acct-field"><label>Time</label><input type="time" id="ceTime"></div>
+    </div>
+    <div class="acct-field"><label>Venue / Address</label><input type="text" id="ceVenue" placeholder="e.g., Wreck Beach, Vancouver"></div>
+    <div class="create-row">
+      <div class="acct-field"><label>Latitude</label><input type="number" id="ceLat" step="0.0001" placeholder="49.2xxx"></div>
+      <div class="acct-field"><label>Longitude</label><input type="number" id="ceLng" step="0.0001" placeholder="-123.1xxx"></div>
+    </div>
+    <div class="acct-field"><label>Category</label>
+      <select id="ceCat" style="padding:9px 11px;border:1px solid #dde5ee;border-radius:9px;font-size:14px;font-family:inherit;outline:none">
+        <option value="social">🎉 Social</option>
+        <option value="sport">⚽ Sport / Outdoor</option>
+        <option value="music">🎵 Music</option>
+        <option value="workshop">📚 Workshop / Class</option>
+        <option value="food">🍜 Food & Drink</option>
+        <option value="other">📌 Other</option>
+      </select>
+    </div>
+    <div class="acct-field"><label>Price</label><input type="text" id="cePrice" placeholder="Free / $10 / Donation"></div>
+    <button class="btn-create-submit" onclick="submitCreateEvent()">📍 Save &amp; place on map</button>
+  </div>
+</div>
+
+<!-- Bike hill warning toast -->
+<div class="hill-toast" id="hillToast">
+  ⚠️ <b>Note:</b> Cycling isochrone doesn't account for hills.<br>
+  Uphill areas (e.g. UBC, North Van) may take significantly longer.
+</div>
 <div id="map"></div>
 <div class="sidebar">
-  <div class="hdr">EventReach · Vancouver <span>v0.1</span></div>
+  <div class="hdr">EventReach · Vancouver <span>v0.2</span><button class="btn-acct" id="btnAcct">👤</button><button class="btn-collapse" id="btnCollapse" title="Minimise sidebar">▲</button></div>
   <div class="pills">
     <span class="pill gray" id="pDisc">Time to first click: —</span>
     <span class="pill gray" id="pMode">Walk · 10 min</span>
@@ -167,38 +351,44 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
     <div class="rlbl" id="rLbl">Walk · 10 min</div>
     <div class="note" id="iNote">Set a location to generate isochrone</div>
 
-    <div class="lbl">Search building</div>
-    <div class="row">
-      <input id="bldgSearch" class="search" type="text" list="bldgList" placeholder="e.g., Irving K. Barber Library">
-      <button class="btn btn-clear" id="btnClearSearch" title="Clear">✕</button>
+    <!-- Building search: only shown when zoomed into UBC -->
+    <div id="bldgSearchWrap" style="display:none">
+      <div class="lbl">🎓 Search UBC building</div>
+      <div class="row">
+        <input id="bldgSearch" class="search" type="text" list="bldgList" placeholder="e.g., Irving K. Barber Library">
+        <button class="btn btn-clear" id="btnClearSearch" title="Clear">✕</button>
+      </div>
+      <datalist id="bldgList"></datalist>
     </div>
-    <datalist id="bldgList"></datalist>
 
     <div class="fgroups">
       <div class="fgroup">
         <span class="fglbl">Events</span>
         <span class="ftag" data-f="tm">🎟 Ticketmaster</span>
-        <span class="ftag" data-f="ubc">🎓 UBC Workshops</span>
+        <span class="ftag" data-f="ubc">🎓 UBC</span>
         <span class="ftag" data-f="event">📅 Local</span>
       </div>
-      <div class="fgroup">
-        <span class="fglbl">When</span>
-        <span class="ttag" data-t="future">🗓 Upcoming</span>
-        <span class="ttag" data-t="24h">⚡ 24 hrs</span>
-        <span class="ttag" data-t="3d">📆 3 days</span>
-        <span class="ttag" data-t="7d">🗓 This week</span>
-              <span class="ttag" data-t="month">📅 This month</span>
-        <span class="ttag" data-t="past30">⏪ Past 30 days</span>
-</div>
-      <div class="fgroup">
-        <span class="fglbl">Amenities</span>
+
+      <!-- Time filter: slider -->
+      <div class="fgroup" style="flex-direction:column;align-items:stretch;gap:3px">
+        <span class="fglbl" style="width:auto">When</span>
+        <input type="range" id="timeSlider" min="0" max="5" value="0" step="1" style="width:100%;accent-color:#0f766e;margin-top:2px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;margin-top:1px">
+          <span>Any</span><span>24h</span><span>3d</span><span>1wk</span><span>1mo</span><span>Past 30d</span>
+        </div>
+        <div id="timeSliderLbl" style="text-align:center;font-size:11px;font-weight:600;color:#0f766e;margin-top:2px">Any time</div>
+      </div>
+
+      <!-- Amenities: hidden unless auto-surfaced or user manually opens -->
+      <div id="amenityGroup" class="fgroup" style="display:none">
+        <span class="fglbl">Places</span>
         <span class="ftag" data-f="park">🌳 Parks</span>
         <span class="ftag" data-f="cc">🏢 Centres</span>
         <span class="ftag" data-f="art">🎨 Art</span>
         <span class="ftag" data-f="permit">🏗 Permits</span>
       </div>
     </div>
-    
+
     <div class="row" style="margin-top:9px">
       <button class="btn btn-places" id="btnPlaces">🗺 Places layer: Off</button>
     </div>
@@ -211,7 +401,7 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
 
 <!-- Right panel: event list + detail -->
 <div class="rpanel" id="rpanel">
-  <div class="rphdr">Nearby Events</div>
+  <div class="rphdr">Nearby Events <button class="btn-collapse" id="btnRpCollapse" style="float:right;color:#94a3b8;font-size:13px" title="Minimise">▲</button></div>
   <div class="list" id="list">
     <div class="ibox">Set a location to discover what's happening around you.</div>
   </div>
@@ -416,8 +606,6 @@ if (welcomeOverlay) welcomeOverlay.addEventListener('click', function(e){ if(e.t
 // ── Wire buttons ──────────────────────────────────────────────────────────────
 document.getElementById('btnLoc').addEventListener('click', getUserLocation);
 document.getElementById('btnDemo').addEventListener('click', setDemo);
-document.getElementById('btnWalk').addEventListener('click', function(){ setMode('foot-walking'); });
-document.getElementById('btnBike').addEventListener('click', function(){ setMode('cycling-regular'); });
 document.getElementById('sMin').addEventListener('input', onSlider);
 document.getElementById('btnFar').addEventListener('click', toggleFar);
 document.getElementById('btnPlaces').addEventListener('click', function(){ togglePlaces(!showAmenities); });
@@ -500,21 +688,23 @@ document.querySelectorAll('.ftag').forEach(function(el){
   });
 });
 
-// Time filter — single select, click again to deselect
-document.querySelectorAll('.ttag').forEach(function(el){
-  el.addEventListener('click', function(){
-    var t = el.getAttribute('data-t');
-    if (timeWindow === t) {
-      timeWindow = null;
-      el.classList.remove('on');
-    } else {
-      timeWindow = t;
-      document.querySelectorAll('.ttag').forEach(function(x){ x.classList.remove('on'); });
-      el.classList.add('on');
-    }
+// ── Time filter slider ────────────────────────────────────────────────────
+// Steps: 0=any, 1=24h, 2=3d, 3=7d, 4=month, 5=past30
+var TIME_SLIDER_STEPS = [null, '24h', '3d', '7d', 'month', 'past30'];
+var TIME_SLIDER_LABELS = ['Any time', 'Next 24 hrs', 'Next 3 days', 'This week', 'This month', 'Past 30 days'];
+(function(){
+  var sl = document.getElementById('timeSlider');
+  var lb = document.getElementById('timeSliderLbl');
+  if(!sl||!lb) return;
+  sl.addEventListener('input', function(){
+    var idx = parseInt(sl.value);
+    timeWindow = TIME_SLIDER_STEPS[idx];
+    lb.textContent = TIME_SLIDER_LABELS[idx];
+    lb.style.color = idx===0 ? '#94a3b8' : '#0f766e';
+    evListLimit = 10;
     render();
   });
-});
+})();
 
 // ── Ticketmaster Discovery API ────────────────────────────────────────────────
 function loadTicketmaster(done) {
@@ -1519,7 +1709,7 @@ function getUserLocation(){
     function(){alert('Could not get location — using Downtown demo.');setDemo();}
   );
 }
-map.on('click',function(e){setLoc(e.latlng.lat,e.latlng.lng,false);});
+// map click is handled below with pending placement support
 
 // ── Render ────────────────────────────────────────────────────────────────────
 var TTAG={
@@ -1548,32 +1738,25 @@ function render(){
   if (timeWindow) {
     var now = Date.now();
     var windowMs;
-    if (timeWindow==='future') windowMs = null; // any time in the future
-    else if (timeWindow==='24h') windowMs = 86400000;
+    if (timeWindow==='24h') windowMs = 86400000;
     else if (timeWindow==='3d') windowMs = 259200000;
     else if (timeWindow==='7d') windowMs = 604800000;
-    else if (timeWindow==='past30') {
-      // past 30 days (events that already happened)
-      windowMs = 30*86400000;
-    }
     else if (timeWindow==='month') {
       var d = new Date(now);
-      var end = new Date(d.getFullYear(), d.getMonth()+1, 0, 23, 59, 59, 999).getTime();
-      windowMs = end - now;
-    } else windowMs = 604800000;
+      windowMs = new Date(d.getFullYear(), d.getMonth()+1, 0, 23,59,59,999).getTime() - now;
+    } else if (timeWindow==='past30') windowMs = 30*86400000;
+    else windowMs = 604800000;
     eventsPool = eventsPool.filter(function(it){
       if (!it.eventDateMs) return false;
-      if (timeWindow==='future') return it.eventDateMs >= now;
-      if (timeWindow==='past30') {
-        return it.eventDateMs <= now && it.eventDateMs >= (now - windowMs);
-      }
+      if (timeWindow==='past30') return it.eventDateMs <= now && it.eventDateMs >= (now - windowMs);
       return it.eventDateMs >= now && it.eventDateMs <= now + windowMs;
     });
-}
+  }
+
 
 // Apply places toggle + filters
   var placesPool = [];
-  if (showAmenities && amenityFilters.size > 0) {
+  if (effectiveShowAmenities && amenityFilters.size > 0) {
     placesPool = placesBase.filter(function(it){ return amenityFilters.has(it.filt); });
   }
 
@@ -1601,13 +1784,25 @@ function render(){
   var nearEvAll = evEnr.filter(function(e){return e.inRange;});
   var nearEv = nearEvAll.slice(0, evListLimit);
 
-  // Auto-surface places when no events in range
-  if (nearEvAll.length === 0 && !showAmenities) {
-    showAmenities = true;
-    if (amenityFilters.size === 0) { amenityFilters.add('park'); amenityFilters.add('cc'); }
-    var b = document.getElementById('btnPlaces');
-    if (b) { b.classList.add('on'); b.textContent = '🗺 Places layer: On'; }
+  // ── Issue #5: Auto-surface places only when no events in range ────────────
+  // We use a local flag so we don't permanently flip showAmenities for the user.
+  var autoShowPlaces = (nearEvAll.length === 0);
+  // If user has explicitly turned places layer on, respect that too.
+  var effectiveShowAmenities = showAmenities || autoShowPlaces;
+  // Auto-set default amenity filters only when auto-triggering (don't override user choices)
+  if (autoShowPlaces && amenityFilters.size === 0) {
+    amenityFilters.add('park'); amenityFilters.add('cc');
     syncFilterUI();
+  }
+  // Show amenity filter group only when relevant
+  var ag = document.getElementById('amenityGroup');
+  if (ag) ag.style.display = effectiveShowAmenities ? '' : 'none';
+  // Update button label to reflect auto state without permanently changing toggle
+  var bPlaces = document.getElementById('btnPlaces');
+  if (bPlaces) {
+    if (showAmenities) { bPlaces.classList.add('on'); bPlaces.textContent = '🗺 Places layer: On'; }
+    else if (autoShowPlaces) { bPlaces.classList.remove('on'); bPlaces.textContent = '🗺 Auto-showing places'; }
+    else { bPlaces.classList.remove('on'); bPlaces.textContent = '🗺 Places layer: Off'; }
   }
 
   // Farther-but-worth-it: only events
@@ -1620,16 +1815,16 @@ function render(){
   var nearPl = nearPlAll.slice(0,10);
 
   // Pills / counts
-  var twName = (timeWindow==='future'?'Upcoming':timeWindow==='24h'?'24 hrs':timeWindow==='3d'?'3 days':timeWindow==='7d'?'This week':timeWindow==='month'?'This month':timeWindow==='past30'?'Past 30 days':timeWindow);
+  var twName = timeWindow ? (TIME_SLIDER_LABELS[TIME_SLIDER_STEPS.indexOf(timeWindow)] || timeWindow) : '';
   var countLbl = 'Events: ' + nearEvAll.length + ' in range' + (timeWindow?(' · '+twName):'');
-  if (showAmenities) countLbl += ' · Places: ' + nearPlAll.length;
+  if (effectiveShowAmenities) countLbl += ' · Places: ' + nearPlAll.length;
   pill('pCount', countLbl, 'gray');
 
   // Marker visibility
   var visIds={};
   nearEvAll.forEach(function(e){visIds[e.id]=true;}); // full pool, not just paginated slice
   farEv.forEach(function(e){visIds[e.id]=true;});
-  if (showAmenities) nearPl.forEach(function(e){visIds[e.id]=true;});
+  if (effectiveShowAmenities) nearPl.forEach(function(e){visIds[e.id]=true;});
 
   mkMap.forEach(function(m,id){
     var it = items.find(function(x){return x.id===id;});
@@ -1641,8 +1836,8 @@ function render(){
       m.setOpacity(inN?1:(inF?0.4:0));
       if(id===selId&&(inN||inF)) m.openPopup(); else m.closePopup();
     } else {
-      // places are only visible when the places layer is on
-      if (!showAmenities) { m.setOpacity(0); m.closePopup(); return; }
+      // places visible when layer is on (user or auto)
+      if (!effectiveShowAmenities) { m.setOpacity(0); m.closePopup(); return; }
       var inP = nearPl.some(function(e){return e.id===id;});
       m.setOpacity(inP?1.0:0);
       if(id===selId&&inP) m.openPopup(); else m.closePopup();
@@ -1685,9 +1880,12 @@ function render(){
     }
   }
 
-  // Places section (toggleable)
-  if(showAmenities){
-    el.appendChild(shdr('Nearby places', 'resources within range · showing ' + nearPl.length + ' of ' + nearPlAll.length));
+  // Places section (auto when no events, or user-toggled)
+  if(effectiveShowAmenities){
+    var plHdr = (autoShowPlaces && !showAmenities)
+      ? shdr('Nearby places', 'no events in range — auto-showing · ' + nearPl.length + ' of ' + nearPlAll.length)
+      : shdr('Nearby places', 'resources within range · showing ' + nearPl.length + ' of ' + nearPlAll.length);
+    el.appendChild(plHdr);
     if(nearPl.length===0){
       var d2=document.createElement('div'); d2.className='ibox';
       d2.textContent='No places in range for the selected layers.';
@@ -1802,12 +2000,13 @@ function popupBodyHtml(e){
   var src = (d.url?('<a href="'+esc(d.url)+'" target="_blank" rel="noopener">Open source</a>'):'');
   if(src) body+='<p>'+src+'</p>';
   var btns = '';
-  if(!e.isOnline){
-    var venueArg = JSON.stringify((e.venue||e.loc||e.address||''));
-    btns = '<div style="display:flex;gap:8px;margin-top:10px">' +
-             '<button class="btn" style="flex:1;border:1px solid #c5d5ff;color:#1a73e8" onclick="routeTo('+e.lat+','+e.lng+','+venueArg+')">🧭 Route</button>' +
-             '<button class="btn" style="flex:1;border:1px solid #e2e8f0;color:#64748b" onclick="clearRoute()">✖ Clear</button>' +
-           '</div>';
+  if(!e.isOnline && isFinite(e.lat) && isFinite(e.lng)){
+    var tm2 = tMode==='foot-walking'?'walking':'bicycling';
+    var gmUrl = 'https://www.google.com/maps/dir/?api=1&destination='+e.lat+','+e.lng+'&travelmode='+tm2;
+    btns = '<div style="display:flex;gap:8px;margin-top:10px">'
+      + '<a href="'+esc(gmUrl)+'" target="_blank" rel="noopener" style="flex:1;text-decoration:none">'
+      + '<button class="btn" style="width:100%;border:1px solid #c5d5ff;color:#1a73e8">🧭 Directions</button></a>'
+      + '</div>';
   }
   return '<div class="det-body"><h3>'+esc(e.title)+'</h3>'+meta+body+btns+'</div>';
 }
@@ -1878,6 +2077,312 @@ loadUBCBuildings().then(onLoaded).catch(onLoaded);
 loadEB(onLoaded);
 loadVan(onLoaded);
 loadUBC(onLoaded);
+
+// ── Issue #3: Bike hill warning ────────────────────────────────────────────
+var hillToastTimer = null;
+function showHillToast(){
+  var t = document.getElementById('hillToast');
+  if(!t) return;
+  t.classList.add('on');
+  clearTimeout(hillToastTimer);
+  hillToastTimer = setTimeout(function(){ t.classList.remove('on'); }, 5000);
+}
+// Patch setMode to show toast when switching to bike
+var _origSetMode = setMode;
+setMode = function(m){
+  _origSetMode(m);
+  if(m === 'cycling-regular') showHillToast();
+};
+document.getElementById('btnWalk').addEventListener('click', function(){ setMode('foot-walking'); });
+document.getElementById('btnBike').addEventListener('click', function(){ setMode('cycling-regular'); });
+
+// ── Issue #6: Mobile sidebar toggle ───────────────────────────────────────
+(function(){
+  var sb = document.querySelector('.sidebar');
+  if(!sb) return;
+  var hdr = sb.querySelector('.hdr');
+  if(!hdr) return;
+  function isMobile(){ return window.innerWidth <= 640; }
+  function toggleSidebar(){
+    if(!isMobile()) return;
+    sb.classList.toggle('open');
+  }
+  hdr.addEventListener('click', toggleSidebar);
+  // auto-open briefly on load so user knows it's there
+  if(isMobile()){
+    sb.classList.add('open');
+    setTimeout(function(){ sb.classList.remove('open'); }, 2000);
+  }
+})();
+
+// ── Account system (localStorage prototype) ───────────────────────────────
+var acctState = (function(){
+  try { return JSON.parse(localStorage.getItem('er_acct')||'null'); } catch(_e){ return null; }
+})();
+var savedIds   = (function(){ try{ return new Set(JSON.parse(localStorage.getItem('er_saved')||'[]')); }catch(_e){ return new Set(); } })();
+var rsvpIds    = (function(){ try{ return new Set(JSON.parse(localStorage.getItem('er_rsvp') ||'[]')); }catch(_e){ return new Set(); } })();
+var userEvents = (function(){ try{ return JSON.parse(localStorage.getItem('er_myevents')||'[]'); }catch(_e){ return []; } })();
+
+function saveAcctState(){
+  try{
+    localStorage.setItem('er_acct', JSON.stringify(acctState));
+    localStorage.setItem('er_saved', JSON.stringify([...savedIds]));
+    localStorage.setItem('er_rsvp',  JSON.stringify([...rsvpIds]));
+    localStorage.setItem('er_myevents', JSON.stringify(userEvents));
+  }catch(_e){}
+}
+
+function updateAcctButton(){
+  var btn = document.getElementById('btnAcct');
+  if(!btn) return;
+  if(acctState){ btn.textContent = acctState.name.charAt(0).toUpperCase(); btn.title = acctState.name; }
+  else { btn.textContent = '👤'; btn.title = 'Account'; }
+}
+function updateProfilePanel(){
+  var auth = document.getElementById('acctAuth');
+  var prof = document.getElementById('acctProfile');
+  if(!auth||!prof) return;
+  if(acctState){
+    auth.style.display = 'none';
+    prof.classList.add('on');
+    document.getElementById('acctAvatarLbl').textContent = acctState.name.charAt(0).toUpperCase();
+    document.getElementById('acctNameLbl').textContent = acctState.name;
+    document.getElementById('acctEmailLbl').textContent = acctState.email;
+    document.getElementById('statSaved').textContent = savedIds.size;
+    document.getElementById('statRsvp').textContent = rsvpIds.size;
+    document.getElementById('statCreated').textContent = userEvents.length;
+  } else {
+    auth.style.display = '';
+    prof.classList.remove('on');
+  }
+}
+function openAcctModal(){
+  var m = document.getElementById('acctModal');
+  if(m){ m.classList.add('on'); updateProfilePanel(); }
+}
+function closeAcctModal(){
+  var m = document.getElementById('acctModal');
+  if(m) m.classList.remove('on');
+}
+function switchTab(tab){
+  document.getElementById('tabLogin').classList.toggle('on', tab==='login');
+  document.getElementById('tabReg').classList.toggle('on', tab==='reg');
+  document.getElementById('formLogin').style.display = tab==='login'?'':'none';
+  document.getElementById('formReg').style.display  = tab==='reg' ?'':'none';
+}
+function doLogin(){
+  var email = (document.getElementById('loginEmail').value||'').trim();
+  var pw    = (document.getElementById('loginPw').value||'').trim();
+  if(!email||!pw){ alert('Please enter email and password.'); return; }
+  // Prototype: any email+pw works; check if matching registered account exists
+  var stored = null;
+  try{ stored = JSON.parse(localStorage.getItem('er_user_'+email)||'null'); }catch(_e){}
+  if(stored && stored.pw !== pw){ alert('Incorrect password.'); return; }
+  acctState = { name: stored ? stored.name : email.split('@')[0], email: email };
+  saveAcctState();
+  updateAcctButton();
+  updateProfilePanel();
+}
+function doRegister(){
+  var name  = (document.getElementById('regName').value||'').trim();
+  var email = (document.getElementById('regEmail').value||'').trim();
+  var pw    = (document.getElementById('regPw').value||'').trim();
+  if(!name||!email||!pw){ alert('Please fill in all fields.'); return; }
+  try{ localStorage.setItem('er_user_'+email, JSON.stringify({name:name,pw:pw})); }catch(_e){}
+  acctState = { name: name, email: email };
+  saveAcctState();
+  updateAcctButton();
+  updateProfilePanel();
+}
+function doLogout(){
+  acctState = null;
+  saveAcctState();
+  updateAcctButton();
+  updateProfilePanel();
+  closeAcctModal();
+}
+
+document.getElementById('btnAcct').addEventListener('click', openAcctModal);
+document.getElementById('acctClose').addEventListener('click', closeAcctModal);
+document.getElementById('acctModal').addEventListener('click', function(e){ if(e.target===this) closeAcctModal(); });
+
+// ── Sidebar collapse ───────────────────────────────────────────────────────
+(function(){
+  var sb = document.querySelector('.sidebar');
+  var btn = document.getElementById('btnCollapse');
+  if(!sb || !btn) return;
+  btn.addEventListener('click', function(e){
+    e.stopPropagation(); // don't trigger mobile hdr toggle
+    sb.classList.toggle('collapsed');
+    btn.title = sb.classList.contains('collapsed') ? 'Expand sidebar' : 'Minimise sidebar';
+  });
+})();
+
+// ── Rpanel collapse ────────────────────────────────────────────────────────
+(function(){
+  var rp  = document.getElementById('rpanel');
+  var btn = document.getElementById('btnRpCollapse');
+  if(!rp || !btn) return;
+  btn.addEventListener('click', function(){
+    rp.classList.toggle('collapsed');
+    btn.title = rp.classList.contains('collapsed') ? 'Expand' : 'Minimise';
+  });
+})();
+
+// ── UBC zoom watcher: show building search only when map is on UBC ─────────
+(function(){
+  var UBC_BOUNDS = L.latLngBounds([49.245, -123.275],[49.275, -123.215]);
+  function checkUBCZoom(){
+    var wrap = document.getElementById('bldgSearchWrap');
+    if(!wrap) return;
+    var z = map.getZoom();
+    var inBounds = map.getBounds().intersects(UBC_BOUNDS);
+    wrap.style.display = (z >= 14 && inBounds) ? '' : 'none';
+  }
+  map.on('zoomend moveend', checkUBCZoom);
+  checkUBCZoom();
+})();
+
+// Expose for inline onclick
+window.switchTab = switchTab;
+window.doLogin = doLogin;
+window.doRegister = doRegister;
+window.doLogout = doLogout;
+
+updateAcctButton();
+
+// ── Save & RSVP helpers ────────────────────────────────────────────────────
+function toggleSave(id){
+  if(!acctState){ openAcctModal(); return; }
+  if(savedIds.has(id)) savedIds.delete(id); else savedIds.add(id);
+  saveAcctState();
+  updateProfilePanel();
+  render();
+}
+function toggleRsvp(id){
+  if(!acctState){ openAcctModal(); return; }
+  if(rsvpIds.has(id)) rsvpIds.delete(id); else rsvpIds.add(id);
+  saveAcctState();
+  updateProfilePanel();
+  render();
+}
+window.toggleSave = toggleSave;
+window.toggleRsvp = toggleRsvp;
+
+// ── Create event ───────────────────────────────────────────────────────────
+var pendingPlacement = false; // waiting for map click to place new event
+function openCreateModal(){
+  closeAcctModal();
+  var m = document.getElementById('createModal');
+  if(m) m.classList.add('on');
+  // pre-fill today's date
+  try{ document.getElementById('ceDate').value = new Date().toISOString().slice(0,10); }catch(_e){}
+}
+function closeCreateModal(){
+  var m = document.getElementById('createModal');
+  if(m) m.classList.remove('on');
+}
+function submitCreateEvent(){
+  var title = (document.getElementById('ceTitle').value||'').trim();
+  if(!title){ alert('Please enter an event title.'); return; }
+  var dateVal = document.getElementById('ceDate').value||'';
+  var timeVal = document.getElementById('ceTime').value||'';
+  var venue   = (document.getElementById('ceVenue').value||'').trim();
+  var lat     = parseFloat(document.getElementById('ceLat').value);
+  var lng     = parseFloat(document.getElementById('ceLng').value);
+  var cat     = document.getElementById('ceCat').value||'other';
+  var price   = (document.getElementById('cePrice').value||'Free').trim();
+  var desc    = (document.getElementById('ceDesc').value||'').trim();
+
+  var catEmoji = {social:'🎉',sport:'⚽',music:'🎵',workshop:'📚',food:'🍜',other:'📌'}[cat]||'📌';
+  var dateStr = dateVal + (timeVal?' · '+timeVal:'');
+  var eventDateMs = dateVal ? new Date(dateVal+(timeVal?'T'+timeVal:'')).getTime() : null;
+  var id = 'user-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+
+  var newEv = {
+    id: id,
+    title: catEmoji+' '+title,
+    desc: venue || 'User-created event',
+    timeText: dateStr || 'See details',
+    lat: isFinite(lat)?lat:null,
+    lng: isFinite(lng)?lng:null,
+    interest: 'high',
+    filt: 'event',
+    img: null,
+    eventDateMs: eventDateMs,
+    createdBy: acctState ? acctState.email : 'anon',
+    detail: {
+      venue: venue||'TBD',
+      address: venue||'',
+      date: dateStr,
+      genre: cat,
+      price: price,
+      url: '',
+      description: desc,
+      artist: ''
+    }
+  };
+
+  items.push(newEv);
+  userEvents.push(newEv);
+  saveAcctState();
+  closeCreateModal();
+
+  if(!isFinite(lat)||!isFinite(lng)){
+    // Ask user to click map for placement
+    pendingPlacement = newEv;
+    note('📍 Click on the map to place your new event: "'+title+'"');
+    pill('pIso','Awaiting pin placement…','warn');
+  } else {
+    upsertMarker(newEv);
+    buildMk();
+    render();
+    note('✅ Event "'+title+'" added to map!');
+  }
+  updateProfilePanel();
+}
+window.openCreateModal = openCreateModal;
+window.closeCreateModal = closeCreateModal;
+window.submitCreateEvent = submitCreateEvent;
+
+// Override map click to support pending placement
+var _origMapClick = null;
+map.on('click', function(e){
+  if(pendingPlacement){
+    pendingPlacement.lat = e.latlng.lat;
+    pendingPlacement.lng = e.latlng.lng;
+    upsertMarker(pendingPlacement);
+    buildMk();
+    render();
+    note('✅ Event "'+pendingPlacement.title+'" placed!');
+    pendingPlacement = false;
+    return; // don't also set user location
+  }
+  setLoc(e.latlng.lat, e.latlng.lng, false);
+});
+
+// Inject save/rsvp badges into detail panel after render
+var _origRenderDet = renderDet;
+renderDet = function(e){
+  _origRenderDet(e);
+  if(!e) return;
+  var panel = document.getElementById('det');
+  if(!panel || !panel.classList.contains('on')) return;
+  var dact = panel.querySelector('.dact');
+  if(!dact) return;
+  // Build save + rsvp badges
+  var saveEl = document.createElement('button');
+  saveEl.className = 'badge-save' + (savedIds.has(e.id)?' on':'');
+  saveEl.innerHTML = savedIds.has(e.id) ? '⭐ Saved' : '☆ Save';
+  saveEl.onclick = function(){ toggleSave(e.id); };
+  var rsvpEl = document.createElement('button');
+  rsvpEl.className = 'badge-rsvp' + (rsvpIds.has(e.id)?' on':'');
+  rsvpEl.innerHTML = rsvpIds.has(e.id) ? '✅ Going' : '＋ RSVP';
+  rsvpEl.onclick = function(){ toggleRsvp(e.id); };
+  // Insert before last button (close btn)
+  dact.insertBefore(rsvpEl, dact.lastElementChild);
+  dact.insertBefore(saveEl, rsvpEl);
+};
 
 }); // end load
 </script>
