@@ -118,6 +118,35 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
 }
 .search:focus{border-color:#9bb7d6; box-shadow:0 0 0 3px rgba(60,130,220,0.12);}
 .btn-clear{width:42px; padding:10px 0; text-align:center;}
+/* ── AI Concierge ── */
+.ai-fab{position:fixed;bottom:24px;right:24px;z-index:9000;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#7c3aed);border:none;color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 18px rgba(26,115,232,.45);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
+.ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(26,115,232,.55)}
+.ai-fab .ai-badge{position:absolute;top:2px;right:2px;width:14px;height:14px;background:#22c55e;border-radius:50%;border:2px solid #fff;display:none}
+.ai-fab .ai-badge.on{display:block}
+.ai-panel{position:fixed;bottom:88px;right:24px;width:360px;max-width:calc(100vw - 32px);background:#fff;border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,.22);z-index:9001;display:flex;flex-direction:column;overflow:hidden;max-height:70vh;transition:opacity .2s,transform .2s;opacity:0;transform:translateY(14px) scale(.97);pointer-events:none}
+.ai-panel.on{opacity:1;transform:none;pointer-events:all}
+.ai-ph{background:linear-gradient(135deg,#1a73e8,#7c3aed);padding:13px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ai-ph-icon{font-size:22px}
+.ai-ph-title{color:#fff;font-weight:700;font-size:15px;flex:1}
+.ai-ph-sub{color:rgba(255,255,255,.75);font-size:11px}
+.ai-close{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;padding:4px 10px;font-size:13px;cursor:pointer;line-height:1.4}
+.ai-close:hover{background:rgba(255,255,255,.3)}
+.ai-msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.ai-msg{max-width:88%;font-size:13px;line-height:1.5;padding:9px 12px;border-radius:12px}
+.ai-msg.bot{background:#f1f5f9;color:#1e293b;align-self:flex-start;border-bottom-left-radius:3px}
+.ai-msg.user{background:#1a73e8;color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.ai-msg.loading{background:#f1f5f9;color:#94a3b8;font-style:italic}
+.ai-chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 10px;flex-shrink:0}
+.ai-chip{font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid #c5d5ff;color:#1a73e8;background:#f0f4ff;cursor:pointer;white-space:nowrap;transition:background .15s}
+.ai-chip:hover{background:#dde8ff}
+.ai-input-row{display:flex;gap:7px;padding:10px 12px;border-top:1px solid #eee;flex-shrink:0}
+.ai-input{flex:1;padding:9px 12px;border:1px solid #dde5ee;border-radius:999px;font-size:13px;outline:none;font-family:inherit}
+.ai-input:focus{border-color:#9bb7d6;box-shadow:0 0 0 3px rgba(60,130,220,.1)}
+.ai-send{width:36px;height:36px;border-radius:50%;background:#1a73e8;border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-send:hover{background:#155cc0}
+.ai-send:disabled{background:#c5d5ff;cursor:default}
+@media(max-width:640px){.ai-panel{right:8px;bottom:80px;width:calc(100vw - 16px)}.ai-fab{bottom:72px;right:12px}}
+
 /* Welcome modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center}
 .modal-box{background:#fff;border-radius:18px;padding:28px 24px;max-width:340px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.25);text-align:center}
@@ -254,8 +283,8 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
     <button class="acct-close" id="acctClose">✕</button>
     <!-- Auth forms (shown when logged out) -->
     <div id="acctAuth">
-      <h3>Welcome back</h3>
-      <p class="acct-sub">Sign in to save events, RSVP, and post your own.</p>
+      <h3>Welcome to EventReach</h3>
+      <p class="acct-sub">Sign in to save events, RSVP, chat, and post your own.</p>
       <div class="acct-tabs">
         <div class="acct-tab on" id="tabLogin" onclick="switchTab('login')">Sign in</div>
         <div class="acct-tab" id="tabReg" onclick="switchTab('reg')">Register</div>
@@ -263,29 +292,78 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
       <div id="formLogin">
         <div class="acct-field"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com"></div>
         <div class="acct-field"><label>Password</label><input type="password" id="loginPw" placeholder="••••••••"></div>
-        <button class="btn-acct-submit" onclick="doLogin()">Sign in</button>
+        <button class="btn-acct-submit" id="btnDoLogin">Sign in</button>
+        <div style="text-align:center;margin:10px 0;font-size:12px;color:#94a3b8">or</div>
+        <button class="btn-acct-submit" id="btnGoogleLogin" style="background:#fff;color:#334155;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.34-8.16 2.34-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continue with Google
+        </button>
       </div>
       <div id="formReg" style="display:none">
-        <div class="acct-field"><label>Name</label><input type="text" id="regName" placeholder="Your name"></div>
+        <div class="acct-field"><label>Display name</label><input type="text" id="regName" placeholder="Your name"></div>
         <div class="acct-field"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com"></div>
-        <div class="acct-field"><label>Password</label><input type="password" id="regPw" placeholder="••••••••"></div>
-        <button class="btn-acct-submit" onclick="doRegister()">Create account</button>
+        <div class="acct-field"><label>Password</label><input type="password" id="regPw" placeholder="min 6 characters"></div>
+        <div class="acct-field"><label>Bio (optional)</label><input type="text" id="regBio" placeholder="e.g. Love live music and hiking"></div>
+        <div class="acct-field">
+          <label>Interests</label>
+          <div id="regInterests" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">
+            <span class="ftag" data-int="music">🎵 Music</span>
+            <span class="ftag" data-int="outdoor">🌲 Outdoors</span>
+            <span class="ftag" data-int="food">🍜 Food & Drink</span>
+            <span class="ftag" data-int="arts">🎨 Arts</span>
+            <span class="ftag" data-int="sports">⚽ Sports</span>
+            <span class="ftag" data-int="community">🏘 Community</span>
+            <span class="ftag" data-int="learning">📚 Learning</span>
+          </div>
+        </div>
+        <button class="btn-acct-submit" id="btnDoRegister">Create account</button>
+        <div style="text-align:center;margin:10px 0;font-size:12px;color:#94a3b8">or</div>
+        <button class="btn-acct-submit" id="btnGoogleReg" style="background:#fff;color:#334155;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.34-8.16 2.34-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continue with Google
+        </button>
       </div>
-      <p class="acct-note">⚠️ Prototype mode — data stored locally in your browser only.</p>
+      <div id="authError" style="font-size:12px;color:#c0311a;margin-top:8px;display:none"></div>
     </div>
     <!-- Profile (shown when logged in) -->
     <div class="acct-profile" id="acctProfile">
       <div class="acct-avatar" id="acctAvatarLbl">?</div>
       <div class="acct-name-lbl" id="acctNameLbl">—</div>
       <div class="acct-email-lbl" id="acctEmailLbl">—</div>
+      <div id="acctBioLbl" style="text-align:center;font-size:12px;color:#64748b;margin-top:2px"></div>
+      <div id="acctInterestsList" style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin:6px 0"></div>
       <div class="acct-stats">
         <div class="acct-stat"><b id="statSaved">0</b><span>Saved</span></div>
         <div class="acct-stat"><b id="statRsvp">0</b><span>RSVPs</span></div>
         <div class="acct-stat"><b id="statCreated">0</b><span>Created</span></div>
       </div>
       <button class="btn-create-event" onclick="openCreateModal()">➕ Create an event</button>
-      <button class="btn-acct-logout" onclick="doLogout()">Sign out</button>
-      <p class="acct-note">⚠️ Prototype mode — data stored locally in your browser only.</p>
+      <button class="btn-acct-logout" id="btnDoLogout" style="margin-top:4px">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chat modal -->
+<div class="acct-modal" id="chatModal">
+  <div class="acct-box" style="max-width:420px;height:560px;max-height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#0369a1,#0f766e);padding:13px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <span style="font-size:20px">💬</span>
+      <div style="flex:1">
+        <div style="color:#fff;font-weight:700;font-size:14px" id="chatRoomTitle">Chat</div>
+        <div style="color:rgba(255,255,255,.7);font-size:11px" id="chatRoomSub"></div>
+      </div>
+      <button class="acct-close" id="chatClose" style="color:#fff">✕</button>
+    </div>
+    <!-- Room tabs -->
+    <div style="display:flex;gap:4px;padding:8px 10px;background:#f8fafc;border-bottom:1px solid #eee;overflow-x:auto;flex-shrink:0" id="chatTabs"></div>
+    <!-- Messages -->
+    <div style="flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:0" id="chatMsgs">
+      <div style="text-align:center;font-size:12px;color:#94a3b8;padding:20px">Sign in to join the conversation</div>
+    </div>
+    <!-- Input -->
+    <div style="display:flex;gap:7px;padding:10px 12px;border-top:1px solid #eee;flex-shrink:0" id="chatInputRow">
+      <input id="chatInput" placeholder="Message…" autocomplete="off" style="flex:1;padding:9px 12px;border:1px solid #dde5ee;border-radius:999px;font-size:13px;outline:none;font-family:inherit">
+      <button id="chatSendBtn" style="width:36px;height:36px;border-radius:50%;background:#0369a1;border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">➤</button>
     </div>
   </div>
 </div>
@@ -401,7 +479,18 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
 
 <!-- Right panel: event list + detail -->
 <div class="rpanel" id="rpanel">
-  <div class="rphdr">Nearby Events <button class="btn-collapse" id="btnRpCollapse" style="float:right;color:#94a3b8;font-size:13px" title="Minimise">▲</button></div>
+  <div class="rphdr" style="padding:8px 10px">
+    <div style="display:flex;align-items:center;gap:6px">
+      <div style="position:relative;flex:1">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;z-index:1">✨</span>
+        <input id="aiSearch" class="search" style="padding:8px 10px 8px 32px;font-size:13px;border-radius:10px;width:100%;border:1.5px solid #c5d5ff;background:#f0f4ff" placeholder="e.g. free outdoor music this weekend…" autocomplete="off"/>
+      </div>
+      <button class="btn" id="aiSearchClear" title="Clear" style="padding:8px 10px;color:#94a3b8;font-size:13px;border:1px solid #e2e8f0;display:none">✕</button>
+      <button class="btn" id="btnOpenGroupChat" title="Group Chat" style="padding:8px 10px;font-size:16px;border:1px solid #e2e8f0;color:#0369a1">💬</button>
+      <button class="btn-collapse" id="btnRpCollapse" style="color:#94a3b8;font-size:13px" title="Minimise">▲</button>
+    </div>
+    <div id="aiSearchStatus" style="font-size:11px;color:#0f766e;margin-top:4px;min-height:14px;padding-left:2px"></div>
+  </div>
   <div class="list" id="list">
     <div class="ibox">Set a location to discover what's happening around you.</div>
   </div>
@@ -409,6 +498,427 @@ input[type=range]{width:100%;accent-color:#1a73e8;display:block;margin-top:2px}
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FIREBASE SETUP
+     ───────────────────────────────────────────────────────────────────────────
+     To activate real accounts + chat, replace the placeholder config below:
+
+     1. Go to https://console.firebase.google.com
+     2. Create a project (free Spark plan is fine)
+     3. Add a Web App → copy the firebaseConfig object
+     4. In Authentication → Sign-in method → enable Email/Password and Google
+     5. In Firestore → Create database (start in test mode)
+     6. In Realtime Database → Create database (start in test mode)
+     7. Paste your 7 config values below and push to GitHub
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, onSnapshot }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getDatabase, ref, push, onChildAdded, serverTimestamp, query, limitToLast, orderByChild }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ── ✏️  PASTE YOUR FIREBASE CONFIG HERE ──────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyAvqC4iSGwf1e3ccZwGyLWyQ0FkUIUUI-k",
+  authDomain:        "eventreach-er.firebaseapp.com",
+  databaseURL:       "https://eventreach-er-default-rtdb.firebaseio.com",
+  projectId:         "eventreach-er",
+  storageBucket:     "eventreach-er.firebasestorage.app",
+  messagingSenderId: "586845543194",
+  appId:             "1:586845543194:web:e3cac36acfdbeb1d5aeaa3"
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CONFIGURED = firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+let app, auth, db, rtdb, googleProvider;
+if (CONFIGURED) {
+  app           = initializeApp(firebaseConfig);
+  auth          = getAuth(app);
+  db            = getFirestore(app);
+  rtdb          = getDatabase(app);
+  googleProvider = new GoogleAuthProvider();
+}
+
+// ── State mirrored to window so legacy code can access it ────────────────────
+let fbUser     = null;   // Firebase Auth user
+let userProfile = null;  // Firestore profile doc
+
+// ── Helper: show auth error ───────────────────────────────────────────────────
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? '' : 'none';
+}
+
+// ── Profile helpers ───────────────────────────────────────────────────────────
+async function loadProfile(uid) {
+  if (!CONFIGURED) return;
+  const snap = await getDoc(doc(db, 'users', uid));
+  userProfile = snap.exists() ? snap.data() : null;
+  syncProfileToLegacy();
+}
+
+async function saveProfile(uid, data) {
+  if (!CONFIGURED) return;
+  await setDoc(doc(db, 'users', uid), data, { merge: true });
+  userProfile = { ...(userProfile || {}), ...data };
+  syncProfileToLegacy();
+}
+
+function syncProfileToLegacy() {
+  if (!fbUser || !userProfile) return;
+  // Keep the old acctState shape so all existing save/RSVP/create-event code keeps working
+  window.acctState = {
+    uid:    fbUser.uid,
+    name:   userProfile.name || fbUser.displayName || fbUser.email.split('@')[0],
+    email:  fbUser.email,
+    bio:    userProfile.bio || '',
+    interests: userProfile.interests || []
+  };
+  window.savedIds  = new Set(userProfile.savedIds  || []);
+  window.rsvpIds   = new Set(userProfile.rsvpIds   || []);
+  if (typeof window.updateAcctButton === 'function') window.updateAcctButton();
+  if (typeof window.updateProfilePanel === 'function') window.updateProfilePanel();
+}
+
+// ── Override legacy saveAcctState to write to Firestore instead ───────────────
+window._fbSaveToFirestore = async function() {
+  if (!fbUser || !CONFIGURED) return;
+  await saveProfile(fbUser.uid, {
+    savedIds:  [...(window.savedIds  || [])],
+    rsvpIds:   [...(window.rsvpIds   || [])],
+  });
+};
+
+// Patch the legacy saveAcctState (defined later in main script) via a timer
+setTimeout(() => {
+  const _legacySave = window.saveAcctState;
+  window.saveAcctState = function() {
+    if (CONFIGURED && fbUser) {
+      window._fbSaveToFirestore();
+    } else if (_legacySave) {
+      _legacySave();
+    }
+  };
+}, 500);
+
+// ── Auth state listener ───────────────────────────────────────────────────────
+if (CONFIGURED) {
+  onAuthStateChanged(auth, async (user) => {
+    fbUser = user;
+    if (user) {
+      await loadProfile(user.uid);
+      if (!userProfile) {
+        // First-time Google sign-in: create profile
+        await saveProfile(user.uid, {
+          name: user.displayName || user.email.split('@')[0],
+          email: user.email,
+          bio: '',
+          interests: [],
+          savedIds: [],
+          rsvpIds: []
+        });
+        await loadProfile(user.uid);
+      }
+      syncProfileToLegacy();
+      if (typeof window.closeAcctModal === 'function') window.closeAcctModal();
+    } else {
+      fbUser = null;
+      userProfile = null;
+      window.acctState = null;
+      window.savedIds = new Set();
+      window.rsvpIds  = new Set();
+      if (typeof window.updateAcctButton === 'function') window.updateAcctButton();
+      if (typeof window.updateProfilePanel === 'function') window.updateProfilePanel();
+    }
+  });
+}
+
+// ── Button wiring (runs after DOM ready) ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {}, false);
+setTimeout(() => {
+
+  // Sign in
+  document.getElementById('btnDoLogin')?.addEventListener('click', async () => {
+    if (!CONFIGURED) { fallbackLogin(); return; }
+    showAuthError('');
+    const email = document.getElementById('loginEmail').value.trim();
+    const pw    = document.getElementById('loginPw').value;
+    try {
+      await signInWithEmailAndPassword(auth, email, pw);
+    } catch(e) {
+      showAuthError(friendlyAuthError(e.code));
+    }
+  });
+
+  // Register
+  document.getElementById('btnDoRegister')?.addEventListener('click', async () => {
+    if (!CONFIGURED) { fallbackRegister(); return; }
+    showAuthError('');
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const pw    = document.getElementById('regPw').value;
+    const bio   = document.getElementById('regBio').value.trim();
+    const interests = [...document.querySelectorAll('#regInterests .ftag.on')].map(t => t.dataset.int);
+    if (!name || !email || !pw) { showAuthError('Please fill in name, email and password.'); return; }
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pw);
+      await saveProfile(cred.user.uid, { name, email, bio, interests, savedIds: [], rsvpIds: [] });
+    } catch(e) {
+      showAuthError(friendlyAuthError(e.code));
+    }
+  });
+
+  // Google sign-in
+  ['btnGoogleLogin','btnGoogleReg'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', async () => {
+      if (!CONFIGURED) { showAuthError('Firebase not configured yet — see code comments.'); return; }
+      try { await signInWithPopup(auth, googleProvider); }
+      catch(e) { showAuthError(friendlyAuthError(e.code)); }
+    });
+  });
+
+  // Sign out
+  document.getElementById('btnDoLogout')?.addEventListener('click', async () => {
+    if (CONFIGURED && auth) await signOut(auth);
+    else { window.acctState = null; window.updateAcctButton?.(); window.updateProfilePanel?.(); window.closeAcctModal?.(); }
+  });
+
+  // Interest tags in register form
+  document.querySelectorAll('#regInterests .ftag').forEach(tag => {
+    tag.addEventListener('click', () => tag.classList.toggle('on'));
+  });
+
+  // Legacy button wiring (keep old onclick handlers working)
+  window.switchTab = window.switchTab || function(tab) {
+    document.getElementById('tabLogin').classList.toggle('on', tab==='login');
+    document.getElementById('tabReg').classList.toggle('on', tab==='reg');
+    document.getElementById('formLogin').style.display = tab==='login' ? '' : 'none';
+    document.getElementById('formReg').style.display   = tab==='reg'   ? '' : 'none';
+    showAuthError('');
+  };
+
+}, 300);
+
+// ── Fallbacks when Firebase not configured ────────────────────────────────────
+function fallbackLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  if (!email || !pw) { showAuthError('Please enter email and password.'); return; }
+  window.acctState = { name: email.split('@')[0], email, uid: 'local-'+email };
+  window.updateAcctButton?.();
+  window.updateProfilePanel?.();
+  window.closeAcctModal?.();
+}
+function fallbackRegister() {
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pw    = document.getElementById('regPw').value;
+  if (!name || !email || !pw) { showAuthError('Please fill all fields.'); return; }
+  window.acctState = { name, email, uid: 'local-'+email, bio:'', interests:[] };
+  window.updateAcctButton?.();
+  window.updateProfilePanel?.();
+  window.closeAcctModal?.();
+}
+
+function friendlyAuthError(code) {
+  const map = {
+    'auth/user-not-found':      'No account found with that email.',
+    'auth/wrong-password':      'Incorrect password.',
+    'auth/email-already-in-use':'An account with this email already exists.',
+    'auth/weak-password':       'Password must be at least 6 characters.',
+    'auth/invalid-email':       'Please enter a valid email address.',
+    'auth/popup-closed-by-user':'Sign-in popup was closed. Please try again.',
+  };
+  return map[code] || 'Something went wrong. Please try again.';
+}
+
+// ── Also override updateProfilePanel to show bio + interests ─────────────────
+setTimeout(() => {
+  const _origUpdateProfile = window.updateProfilePanel;
+  window.updateProfilePanel = function() {
+    _origUpdateProfile?.();
+    if (!window.acctState) return;
+    const bio = window.acctState.bio || '';
+    const interests = window.acctState.interests || [];
+    const bioEl = document.getElementById('acctBioLbl');
+    const intEl = document.getElementById('acctInterestsList');
+    if (bioEl) bioEl.textContent = bio;
+    if (intEl) {
+      const labels = {music:'🎵 Music',outdoor:'🌲 Outdoors',food:'🍜 Food',arts:'🎨 Arts',sports:'⚽ Sports',community:'🏘 Community',learning:'📚 Learning'};
+      intEl.innerHTML = interests.map(i => `<span class="tg tg_">${labels[i]||i}</span>`).join('');
+    }
+  };
+  // Remove old "Prototype mode" note since we now have real auth
+  document.querySelectorAll('.acct-note').forEach(n => n.remove());
+}, 400);
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  CHAT SYSTEM
+// ══════════════════════════════════════════════════════════════════════════════
+
+const GROUP_ROOMS = [
+  { id: 'downtown',  label: '🏙 Downtown',  sub: 'General Vancouver chat' },
+  { id: 'ubc',       label: '🎓 UBC',        sub: 'Campus events & study' },
+  { id: 'music',     label: '🎵 Music',      sub: 'Concerts & live music' },
+  { id: 'outdoors',  label: '🌲 Outdoors',   sub: 'Hikes, parks, activities' },
+  { id: 'food',      label: '🍜 Food',       sub: 'Restaurants & food events' },
+];
+
+let currentChatRoom = null;
+let chatUnsubscribe  = null;
+
+function openChatModal(roomId, roomLabel, roomSub) {
+  if (!window.acctState) { window.openAcctModal?.(); return; }
+  const modal = document.getElementById('chatModal');
+  if (!modal) return;
+  modal.classList.add('on');
+  renderChatTabs(roomId);
+  switchChatRoom(roomId, roomLabel, roomSub);
+}
+
+function renderChatTabs(activeId) {
+  const tabs = document.getElementById('chatTabs');
+  if (!tabs) return;
+  tabs.innerHTML = GROUP_ROOMS.map(r =>
+    `<button onclick="window._switchChat('${r.id}','${r.label}','${r.sub}')"
+      style="flex-shrink:0;padding:5px 10px;border-radius:8px;font-size:12px;border:1px solid ${r.id===activeId?'#0369a1':'#e2e8f0'};background:${r.id===activeId?'#e0f2fe':'#fff'};color:${r.id===activeId?'#0369a1':'#64748b'};cursor:pointer;white-space:nowrap"
+    >${r.label}</button>`
+  ).join('');
+}
+
+window._switchChat = function(id, label, sub) {
+  switchChatRoom(id, label, sub);
+  renderChatTabs(id);
+};
+
+function switchChatRoom(roomId, roomLabel, roomSub) {
+  currentChatRoom = roomId;
+  document.getElementById('chatRoomTitle').textContent = roomLabel || roomId;
+  document.getElementById('chatRoomSub').textContent   = roomSub  || '';
+  const msgsEl = document.getElementById('chatMsgs');
+  if (msgsEl) msgsEl.innerHTML = '<div style="text-align:center;font-size:12px;color:#94a3b8;padding:12px">Loading messages…</div>';
+
+  if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+
+  if (!CONFIGURED || !rtdb) {
+    if (msgsEl) msgsEl.innerHTML = '<div style="text-align:center;font-size:12px;color:#94a3b8;padding:20px">💡 Connect Firebase to enable live chat.<br>See code comments for setup instructions.</div>';
+    return;
+  }
+
+  const roomRef = query(ref(rtdb, `chat/${roomId}`), orderByChild('ts'), limitToLast(60));
+  if (msgsEl) msgsEl.innerHTML = '';
+
+  chatUnsubscribe = onChildAdded(roomRef, (snap) => {
+    const msg = snap.val();
+    if (!msg) return;
+    appendChatMessage(msg);
+  });
+}
+
+function appendChatMessage(msg) {
+  const msgsEl = document.getElementById('chatMsgs');
+  if (!msgsEl) return;
+  const isMe = fbUser && msg.uid === fbUser.uid;
+  const time = msg.ts ? new Date(msg.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+  const el = document.createElement('div');
+  el.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};gap:2px;max-width:85%;align-self:${isMe?'flex-end':'flex-start'}`;
+  el.innerHTML = `
+    ${!isMe ? `<span style="font-size:10px;color:#94a3b8;padding:0 4px">${escHtml(msg.name||'User')}</span>` : ''}
+    <div style="padding:8px 11px;border-radius:12px;${isMe?'border-bottom-right-radius:3px;background:#0369a1;color:#fff':'border-bottom-left-radius:3px;background:#f1f5f9;color:#1e293b'};font-size:13px;line-height:1.4">${escHtml(msg.text||'')}</div>
+    <span style="font-size:10px;color:#cbd5e1;padding:0 4px">${time}</span>`;
+  msgsEl.appendChild(el);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function sendChatMessage() {
+  if (!window.acctState) { window.openAcctModal?.(); return; }
+  if (!CONFIGURED || !rtdb) { alert('Firebase not configured yet — see code comments.'); return; }
+  const input = document.getElementById('chatInput');
+  const text  = (input?.value || '').trim();
+  if (!text || !currentChatRoom) return;
+  input.value = '';
+  await push(ref(rtdb, `chat/${currentChatRoom}`), {
+    text,
+    uid:  fbUser?.uid  || 'anon',
+    name: window.acctState?.name || 'User',
+    ts:   Date.now()
+  });
+}
+
+// Event-specific chat: opens chat modal scoped to a single event
+window.openEventChat = function(eventId, eventTitle) {
+  const roomId  = 'event-' + eventId;
+  const label   = '💬 ' + (eventTitle || 'Event Chat').slice(0, 30);
+  openChatModal(roomId, label, 'Chat with people attending this event');
+  // Inject the event room into the tabs temporarily
+  const tabs = document.getElementById('chatTabs');
+  if (tabs) {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = 'flex-shrink:0;padding:5px 10px;border-radius:8px;font-size:12px;border:1px solid #0369a1;background:#e0f2fe;color:#0369a1;cursor:pointer;white-space:nowrap';
+    tabs.insertBefore(btn, tabs.firstChild);
+    renderChatTabs(roomId);
+  }
+};
+
+// Group chat button
+document.getElementById('btnOpenGroupChat')?.addEventListener('click', () => {
+  openChatModal('downtown', '🏙 Downtown', 'General Vancouver chat');
+});
+document.getElementById('chatClose')?.addEventListener('click', () => {
+  document.getElementById('chatModal')?.classList.remove('on');
+  if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+});
+document.getElementById('chatModal')?.addEventListener('click', (e) => {
+  if (e.target === document.getElementById('chatModal')) {
+    document.getElementById('chatModal').classList.remove('on');
+    if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+  }
+});
+document.getElementById('chatSendBtn')?.addEventListener('click', sendChatMessage);
+document.getElementById('chatInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); sendChatMessage(); }
+});
+
+// ── Inject "💬 Chat" button into event detail panel ─────────────────────────
+setTimeout(() => {
+  const _origRD = window.renderDet;
+  if (!_origRD) return;
+  window.renderDet = function(e) {
+    _origRD(e);
+    if (!e) return;
+    const panel = document.getElementById('det');
+    if (!panel?.classList.contains('on')) return;
+    const dact = panel.querySelector('.dact');
+    if (!dact) return;
+    const existing = dact.querySelector('.btn-event-chat');
+    if (existing) existing.remove();
+    const chatBtn = document.createElement('button');
+    chatBtn.className = 'btn btn-event-chat';
+    chatBtn.style.cssText = 'border:1px solid #bae6fd;color:#0369a1;font-size:13px;flex:1';
+    chatBtn.textContent = '💬 Chat';
+    chatBtn.onclick = () => window.openEventChat(e.id, e.title);
+    dact.insertBefore(chatBtn, dact.firstChild);
+  };
+}, 600);
+
+console.log(CONFIGURED
+  ? '✅ Firebase connected'
+  : '⚠️ Firebase not configured — using local fallback. See code comments to enable real auth + chat.');
+
+</script>
 <script>
 window.addEventListener('load', function() {
 
@@ -2423,5 +2933,367 @@ renderDet = function(e){
 }); // end load
 </script>
 
-</body>
-</html>
+<!-- ── AI Event Concierge ── -->
+<button class="ai-fab" id="aiFab" title="AI Event Concierge">🤖<span class="ai-badge" id="aiBadge"></span></button>
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-ph">
+    <span class="ai-ph-icon">🤖</span>
+    <div style="flex:1"><div class="ai-ph-title">EventReach AI</div><div class="ai-ph-sub">Your Vancouver event guide</div></div>
+    <button class="ai-close" id="aiCloseBtn">✕</button>
+  </div>
+  <div class="ai-msgs" id="aiMsgs"></div>
+  <div class="ai-chips" id="aiChips"></div>
+  <div class="ai-input-row">
+    <input class="ai-input" id="aiInput" placeholder="Ask about events, places, transport…" autocomplete="off"/>
+    <button class="ai-send" id="aiSend">➤</button>
+  </div>
+</div>
+
+<script>
+// ── AI Concierge ──────────────────────────────────────────────────────────────
+(function(){
+  var fab   = document.getElementById('aiFab');
+  var panel = document.getElementById('aiPanel');
+  var badge = document.getElementById('aiBadge');
+  var msgs  = document.getElementById('aiMsgs');
+  var input = document.getElementById('aiInput');
+  var send  = document.getElementById('aiSend');
+  var chips = document.getElementById('aiChips');
+  var closeBtn = document.getElementById('aiCloseBtn');
+
+  var history = []; // {role, content}
+  var open = false;
+
+  // ── Suggested prompts ──
+  var STARTER_CHIPS = [
+    "What's on this weekend?",
+    "Free events nearby",
+    "Best venues for music",
+    "Bike-friendly events",
+    "UBC workshops this week",
+    "Outdoor events in parks",
+    "What's happening tonight?"
+  ];
+
+  function setChips(list){
+    chips.innerHTML = '';
+    list.forEach(function(label){
+      var c = document.createElement('button');
+      c.className = 'ai-chip';
+      c.textContent = label;
+      c.onclick = function(){ sendMsg(label); };
+      chips.appendChild(c);
+    });
+  }
+
+  function addMsg(role, text){
+    var el = document.createElement('div');
+    el.className = 'ai-msg ' + role;
+    el.textContent = text;
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+    return el;
+  }
+
+  function getAppContext(){
+    // Snapshot current app state to give Claude useful context
+    var ctx = {};
+    try {
+      ctx.travelMode = (typeof tMode !== 'undefined') ? (tMode === 'foot-walking' ? 'walking' : 'cycling') : 'unknown';
+      ctx.travelMins = (typeof mins !== 'undefined') ? mins : null;
+      ctx.locationSet = (typeof userMk !== 'undefined' && userMk !== null);
+      ctx.showFar = (typeof showFar !== 'undefined') ? showFar : false;
+
+      // Collect visible/loaded events
+      var evList = [];
+      if (typeof items !== 'undefined' && items.length) {
+        var now = Date.now();
+        var center = ctx.locationSet ? userMk.getLatLng() : null;
+        var fallR = ctx.travelMins ? ctx.travelMins * ((ctx.travelMode === 'cycling') ? 250 : 80) : 800;
+
+        items.filter(function(it){
+          return it.filt === 'tm' || it.filt === 'event' || it.filt === 'ubc';
+        }).forEach(function(it){
+          var dist = center && it.lat && it.lng ? map.distance(center, [it.lat, it.lng]) : null;
+          var inRange = dist !== null ? dist <= fallR : null;
+          var upcoming = it.eventDateMs ? it.eventDateMs >= now : true;
+          evList.push({
+            id: it.id,
+            title: it.title,
+            venue: it.desc,
+            date: it.timeText,
+            source: it.filt,
+            price: it.detail && it.detail.price ? it.detail.price : '',
+            genre: it.detail && it.detail.genre ? it.detail.genre : '',
+            distanceMeters: dist ? Math.round(dist) : null,
+            inRange: inRange,
+            upcoming: upcoming,
+            url: it.detail && it.detail.url ? it.detail.url : ''
+          });
+        });
+        // sort by distance
+        evList.sort(function(a,b){ return (a.distanceMeters||9999999) - (b.distanceMeters||9999999); });
+        ctx.events = evList.slice(0, 40); // cap at 40 to keep context reasonable
+        ctx.totalEvents = evList.length;
+        ctx.eventsInRange = evList.filter(function(e){ return e.inRange; }).length;
+      }
+    } catch(e){ ctx.error = 'Could not snapshot app state: ' + e.message; }
+    return ctx;
+  }
+
+  function buildSystemPrompt(ctx){
+    var parts = [
+      "You are EventReach AI, a friendly and knowledgeable Vancouver event concierge embedded in a map app.",
+      "Today is " + new Date().toDateString() + ".",
+      "You help users discover events and places in Vancouver based on their travel time, interests, and mood.",
+      "",
+      "Current app state:",
+      "- Travel mode: " + ctx.travelMode + (ctx.travelMins ? " · " + ctx.travelMins + " minutes" : ""),
+      "- Location set: " + ctx.locationSet,
+      "- Events loaded: " + (ctx.totalEvents || 0) + " total, " + (ctx.eventsInRange || 0) + " in travel range",
+      "- Show farther events: " + ctx.showFar,
+    ];
+
+    if (ctx.events && ctx.events.length) {
+      parts.push("", "Available events (sorted by distance):");
+      ctx.events.forEach(function(e, i){
+        var line = (i+1) + ". " + e.title;
+        if (e.venue) line += " @ " + e.venue;
+        if (e.date) line += " | " + e.date;
+        if (e.price) line += " | " + e.price;
+        if (e.genre) line += " | " + e.genre;
+        if (e.distanceMeters !== null) line += " | ~" + (e.distanceMeters < 1000 ? e.distanceMeters + "m" : (e.distanceMeters/1000).toFixed(1) + "km") + " away";
+        if (e.inRange) line += " ✅ in range";
+        line += " [" + e.source + "]";
+        parts.push(line);
+      });
+    } else {
+      parts.push("", "No events loaded yet. The user may not have set a location.");
+    }
+
+    parts.push(
+      "",
+      "Guidelines:",
+      "- Be concise but warm. Use short paragraphs.",
+      "- When recommending events, pick the most relevant ones (don't list everything).",
+      "- Mention if an event is within their travel range (✅ in range) or farther away.",
+      "- If the user hasn't set a location, suggest they click 'My location' or tap the map.",
+      "- You can suggest they adjust travel time or toggle 'Walk/Bike' in the sidebar.",
+      "- Don't use markdown headers. Use natural sentences.",
+      "- If asked for specific event details, give venue, date, price, and source (Ticketmaster vs local)."
+    );
+
+    return parts.join("\n");
+  }
+
+  async function sendMsg(text){
+    text = (text || '').trim();
+    if (!text) return;
+    input.value = '';
+    chips.innerHTML = '';
+    send.disabled = true;
+
+    addMsg('user', text);
+    history.push({ role: 'user', content: text });
+
+    var loadEl = addMsg('loading', '✦ Thinking…');
+
+    try {
+      var ctx = getAppContext();
+      var systemPrompt = buildSystemPrompt(ctx);
+
+      var response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: history
+        })
+      });
+
+      var data = await response.json();
+      var reply = '';
+      if (data.content && data.content.length) {
+        data.content.forEach(function(block){
+          if (block.type === 'text') reply += block.text;
+        });
+      }
+      if (!reply) reply = "Sorry, I couldn't generate a response. Please try again.";
+
+      msgs.removeChild(loadEl);
+      addMsg('bot', reply);
+      history.push({ role: 'assistant', content: reply });
+
+      // Show follow-up chips
+      setChips(["Tell me more", "What's free?", "Closest event", "Music events", "Outdoor options"]);
+      badge.classList.add('on');
+
+    } catch(err){
+      msgs.removeChild(loadEl);
+      addMsg('bot', "Hmm, something went wrong connecting to the AI. Please try again.");
+      console.error('AI error:', err);
+    }
+    send.disabled = false;
+  }
+
+  function togglePanel(){
+    open = !open;
+    panel.classList.toggle('on', open);
+    if (open && msgs.children.length === 0) {
+      // Welcome message
+      var ctx = getAppContext();
+      var intro = ctx.locationSet
+        ? "👋 Hi! I can see you're exploring Vancouver with a " + ctx.travelMins + "-min " + ctx.travelMode + " radius. There are " + ctx.eventsInRange + " events within range. What kind of event are you in the mood for?"
+        : "👋 Hi! I'm your Vancouver event guide. To get started, click **My location** or tap anywhere on the map to set your starting point — then I can tell you what's reachable!";
+      addMsg('bot', intro);
+      setChips(STARTER_CHIPS);
+    }
+  }
+
+  fab.addEventListener('click', togglePanel);
+  closeBtn.addEventListener('click', function(){ open = false; panel.classList.remove('on'); });
+
+  send.addEventListener('click', function(){ sendMsg(input.value); });
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(input.value); }
+  });
+})();
+</script>
+
+<script>
+// ── AI-Powered Natural Language Search ───────────────────────────────────────
+(function(){
+  var searchInput  = document.getElementById('aiSearch');
+  var searchClear  = document.getElementById('aiSearchClear');
+  var searchStatus = document.getElementById('aiSearchStatus');
+  if(!searchInput) return;
+
+  var debounceTimer = null;
+  var lastQuery = '';
+  var searching = false;
+
+  function setStatus(msg, color){
+    searchStatus.textContent = msg;
+    searchStatus.style.color = color || '#0f766e';
+  }
+
+  function clearAiSearch(){
+    searchInput.value = '';
+    searchClear.style.display = 'none';
+    setStatus('');
+    lastQuery = '';
+    window._aiSearchFilter = null;
+    if(typeof userMk !== 'undefined' && userMk) render();
+  }
+
+  searchClear.addEventListener('click', clearAiSearch);
+
+  searchInput.addEventListener('input', function(){
+    var q = searchInput.value.trim();
+    searchClear.style.display = q ? '' : 'none';
+    if (!q){ clearAiSearch(); return; }
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function(){ runAiSearch(q); }, 650);
+  });
+
+  searchInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ clearTimeout(debounceTimer); runAiSearch(searchInput.value.trim()); }
+    if(e.key === 'Escape'){ clearAiSearch(); }
+  });
+
+  async function runAiSearch(q){
+    if(!q || searching) return;
+    if(q === lastQuery) return;
+    lastQuery = q;
+    searching = true;
+    setStatus('✦ AI searching\u2026', '#1a73e8');
+
+    var eventLines = [];
+    if(typeof items !== 'undefined'){
+      var now = Date.now();
+      var center = (typeof userMk !== 'undefined' && userMk) ? userMk.getLatLng() : null;
+      var fallR = (typeof mins !== 'undefined' && typeof tMode !== 'undefined') ? mins * (tMode==='cycling-regular'?250:80) : 800;
+      items.filter(function(it){ return it.filt==='tm'||it.filt==='event'||it.filt==='ubc'; })
+        .forEach(function(it, i){
+          var dist = center && it.lat && it.lng ? map.distance(center,[it.lat,it.lng]) : null;
+          var inRange = dist!==null ? dist<=fallR : true;
+          var upcoming = it.eventDateMs ? it.eventDateMs>=now : true;
+          var price = (it.detail&&it.detail.price)||'';
+          var genre = (it.detail&&it.detail.genre)||'';
+          var distStr = dist ? (dist<1000?Math.round(dist)+'m':(dist/1000).toFixed(1)+'km') : '?';
+          eventLines.push([i,it.id,it.title,it.desc||'',it.timeText,price,genre,distStr,inRange?'yes':'no',upcoming?'future':'past',it.filt].join('|'));
+        });
+    }
+
+    var systemPrompt = [
+      "You are a search engine for a Vancouver event app. Today: "+new Date().toDateString()+".",
+      "Return ONLY a JSON object, no other text, no markdown fences.",
+      "Events (index|id|title|venue|date|price|genre|distance|inRange|timing|source):",
+      eventLines.join("\n")||"(none loaded)",
+      "",
+      "Return: {\"matchedIds\":[\"id1\",...],\"summary\":\"short plain description max 55 chars\"}",
+      "Rules: match by mood/genre/timing/price/location. 'free'=empty/Free/$0. 'outdoor'=park/beach/outdoor. 'tonight'/'today'=today date. 'this weekend'=upcoming Sat/Sun. 'nearby'=inRange=yes. 'music'=genre Music or concert/band. 'UBC'=source ubc. Max 15 ids. Use real IDs only."
+    ].join("\n");
+
+    try {
+      var resp = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:300,
+          system:systemPrompt,
+          messages:[{role:"user",content:"Query: "+q}]
+        })
+      });
+      var data = await resp.json();
+      var raw = '';
+      if(data.content) data.content.forEach(function(b){if(b.type==='text')raw+=b.text;});
+      raw = raw.replace(/```json|```/g,'').trim();
+      var parsed = JSON.parse(raw);
+      var ids = new Set(parsed.matchedIds||[]);
+      var summary = parsed.summary||(ids.size+' results');
+      window._aiSearchFilter = ids;
+      setStatus('\u2705 '+summary+' \u00b7 '+ids.size+' match'+(ids.size===1?'':'es'), '#0f766e');
+      if(typeof userMk!=='undefined'&&userMk) render(); else applySearchFilter();
+    } catch(err){
+      setStatus('\u26a0\ufe0f Search failed \u2014 try again', '#c0311a');
+      console.error('AI search error:',err);
+    }
+    searching = false;
+  }
+
+  function patchRender(){
+    if(typeof render==='undefined'){setTimeout(patchRender,200);return;}
+    var _orig = render;
+    render = function(){
+      _orig.apply(this,arguments);
+      applySearchFilter();
+    };
+  }
+  setTimeout(patchRender, 400);
+
+  function applySearchFilter(){
+    var ids = window._aiSearchFilter;
+    if(!ids||!ids.size) return;
+    var listEl = document.getElementById('list');
+    if(!listEl) return;
+    listEl.querySelectorAll('.card').forEach(function(card){
+      var id = card.getAttribute('data-id');
+      card.style.display = (id && !ids.has(id)) ? 'none' : '';
+    });
+    listEl.querySelectorAll('.shdr').forEach(function(hdr){
+      var next = hdr.nextElementSibling;
+      var hasVisible = false;
+      while(next && !next.classList.contains('shdr')){
+        if(next.classList.contains('card') && next.style.display!=='none') hasVisible=true;
+        next = next.nextElementSibling;
+      }
+      hdr.style.display = hasVisible?'':'none';
+    });
+  }
+})();
+</script>
+
