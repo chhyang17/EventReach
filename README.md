@@ -4,7 +4,7 @@
 
 EventReach is a geography-first event discovery prototype for Vancouver. Instead of surfacing events by algorithm or interest graph, it organizes everything by physical proximity — showing you what's happening within your actual travel range right now.
 
-→ **Live demo:** [chhyang17.github.io/EventReach](https://chhyang17.github.io/EventReach/)
+→ **Live demo:** [yangchh17.github.io/EventReach](https://yangchh17.github.io/EventReach/)
 
 ---
 
@@ -73,7 +73,7 @@ This is an early prototype being used to validate core product hypotheses. The f
 
 ## Roadmap
 
-See [GitHub Issues](https://github.com/chhyang17/EventReach/issues) for the full backlog.
+See [GitHub Issues](https://github.com/yangchh17/EventReach/issues) for the full backlog.
 
 ---
 
